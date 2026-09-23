@@ -1131,7 +1131,7 @@ document.getElementById("clear").addEventListener("click",e=>{e.preventDefault()
 initStore();
 
 /* ---------- 네이버 지도 (GitHub Pages 등 등록한 주소에서만 작동) ---------- */
-const NAVER_KEY="Jeqkna0qic";
+const NAVER_KEY="jeqkna0qic";
 function nmIcon(i){
   const p=P[i], on=i===active;
   const cls=`nm ${CK[p.c]}${p.h?" h":""}${MY[p.n]?" v":""}${on?" on":""}`;
@@ -1165,12 +1165,18 @@ window.initNaverMap=function(){
   }catch(e){console.warn("naver init fail",e);nmFallback()}
 };
 function nmFallback(){ if(nmap){nmap=null;nmarks=[]} drawMap(); render(); }
-window.navermap_authFailure=function(){ nmFallback(); };
+function nmStatus(t){const n=document.getElementById("storeNote");if(n)n.textContent=t}
+let nmParam=(new URLSearchParams(location.search).get("keytype")==="client")?"ncpClientId":"ncpKeyId", nmRetried=false;
+window.navermap_authFailure=function(){
+  nmFallback();
+  if(!nmRetried && nmParam==="ncpKeyId"){nmRetried=true; location.replace(location.pathname+"?keytype=client"); return;}
+  nmStatus("⚠ 네이버 지도 인증 실패: 네이버 클라우드에 등록한 Web 서비스 URL이 "+location.origin+" 인지 확인하세요");
+};
 (function loadNaver(){
   if(location.protocol==="file:") return;            // 파일로 열면 등록 주소가 없어 인증 불가
   const sc=document.createElement("script");
-  sc.src=`https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=${NAVER_KEY}&callback=initNaverMap`;
-  sc.onerror=()=>{};                                   // 불러오지 못하면 그린 지도 유지
+  sc.src=`https://oapi.map.naver.com/openapi/v3/maps.js?${nmParam}=${NAVER_KEY}&callback=initNaverMap`;
+  sc.onerror=()=>nmStatus("⚠ 네이버 지도 스크립트를 불러오지 못했습니다 (인터넷 연결 확인)");                                   // 불러오지 못하면 그린 지도 유지
   document.head.appendChild(sc);
 })();
 </script>
