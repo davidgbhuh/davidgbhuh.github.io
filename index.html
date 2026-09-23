@@ -1,0 +1,1178 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>김포·강화 여행지도</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  --bg:#EDF0EC;--paper:#F8FAF7;--ink:#1E2A2E;--muted:#5A6A6C;--line:#CBD3CE;
+  --sea:#2F6F7E;--land:#DCE3D5;--focus:#2F6F7E;
+  --tour:#2F6F7E;--food:#B8412F;--cafe:#7A5230;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#131B1E;--paper:#1B2528;--ink:#E7ECEA;--muted:#9AA9AA;--line:#2E3B3F;
+    --sea:#6FB3C2;--land:#26322F;--focus:#6FB3C2;--tour:#6FB3C2;--food:#E07A62;--cafe:#C99A6E;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#131B1E;--paper:#1B2528;--ink:#E7ECEA;--muted:#9AA9AA;--line:#2E3B3F;
+  --sea:#6FB3C2;--land:#26322F;--focus:#6FB3C2;--tour:#6FB3C2;--food:#E07A62;--cafe:#C99A6E;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased}
+.app{height:100%;display:grid;grid-template-rows:auto 1fr}
+
+/* ---------- 상단: 검색 + 필터 ---------- */
+header{background:var(--paper);border-bottom:1px solid var(--line);padding:14px 20px 12px;
+  display:flex;flex-wrap:wrap;align-items:center;gap:10px 22px}
+h1{font-family:"Gowun Batang",serif;font-size:1.45rem;margin:0;white-space:nowrap;letter-spacing:-0.01em}
+.search{position:relative;flex:1 1 260px;max-width:420px}
+.search input{width:100%;font:inherit;font-size:1rem;padding:9px 36px 9px 38px;border:1px solid var(--line);
+  border-radius:10px;background:var(--bg);color:var(--ink)}
+.search svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:17px;height:17px;color:var(--muted)}
+.search button{position:absolute;right:6px;top:50%;transform:translateY(-50%);border:0;background:none;
+  color:var(--muted);font-size:1.2rem;cursor:pointer;padding:4px 8px;display:none}
+.search.has button{display:block}
+.filters{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.sep{width:1px;height:22px;background:var(--line);margin:0 4px}
+.chip{font:inherit;font-size:.88rem;border:1px solid var(--line);background:var(--paper);color:var(--ink);
+  padding:5px 12px;border-radius:999px;cursor:pointer}
+.chip .sw{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+
+/* ---------- 하단: 지도 | 리스트 ---------- */
+.body{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(320px,1fr);min-height:0}
+.mapPane{min-height:0;padding:16px;display:flex;flex-direction:column;border-right:1px solid var(--line)}
+.map{flex:1;min-height:0;background:var(--paper);border:1px solid var(--line);border-radius:16px;overflow:hidden;display:flex}
+.map svg{width:100%;height:100%;display:block}
+.water{fill:color-mix(in srgb,var(--sea) 14%,var(--paper))}
+.land{fill:var(--land);stroke:color-mix(in srgb,var(--sea) 35%,var(--land));stroke-width:1}
+.rlabel{font-family:"Gowun Batang",serif;font-size:13px;fill:var(--muted)}
+.wlabel{font-size:11px;fill:var(--sea);font-style:italic}
+.dot{cursor:pointer;stroke:var(--paper);stroke-width:2;transition:r .15s,opacity .15s}
+.dot.t{fill:var(--tour)} .dot.f{fill:var(--food)} .dot.c{fill:var(--cafe)}
+.dot.dim{opacity:.13;pointer-events:none}
+.dot.on{r:10;stroke:var(--ink)}
+.dot.h{stroke:#E0A100;stroke-width:2.5}
+.dlabel{font-size:12px;font-weight:600;fill:var(--ink);paint-order:stroke;stroke:var(--paper);stroke-width:4px;pointer-events:none}
+.mapnote{display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px;font-size:.8rem;color:var(--muted);padding:8px 4px 0}
+.key i{display:inline-block;width:10px;height:10px;border-radius:50%;margin:0 5px 0 12px;vertical-align:-1px}
+
+.listPane{min-height:0;overflow-y:auto;padding:6px 20px 40px;scroll-behavior:smooth}
+.count{position:sticky;top:0;background:var(--bg);font-size:.85rem;color:var(--muted);padding:10px 0 8px;z-index:1;border-bottom:1px solid var(--line)}
+.place{padding:16px 6px 18px 16px;border-bottom:1px solid var(--line);position:relative;cursor:pointer}
+.place::before{content:"";position:absolute;left:0;top:18px;bottom:20px;width:4px;border-radius:2px}
+.place.t::before{background:var(--tour)} .place.f::before{background:var(--food)} .place.c::before{background:var(--cafe)}
+.place.on{background:color-mix(in srgb,var(--sea) 9%,transparent);border-radius:10px}
+.badge{display:inline-block;font-family:"IBM Plex Sans KR",sans-serif;font-size:.72rem;font-weight:600;color:#fff;background:#E0A100;border-radius:6px;padding:1px 7px;margin-left:8px;vertical-align:3px}
+.place h3{font-family:"Gowun Batang",serif;font-size:1.2rem;margin:0 0 1px}
+.meta{font-size:.8rem;color:var(--muted);margin-bottom:8px}
+.meta b{font-weight:600}
+.place.t .meta b{color:var(--tour)} .place.f .meta b{color:var(--food)} .place.c .meta b{color:var(--cafe)}
+.place p{margin:0 0 8px}
+.pros{margin:0 0 8px;padding-left:1.1em}
+.tip{font-size:.87rem;color:var(--muted)}
+.tip strong{color:var(--ink);font-weight:600}
+mark{background:color-mix(in srgb,#F2C94C 55%,transparent);color:inherit;border-radius:2px}
+.navbtn{display:inline-flex;align-items:center;gap:7px;text-decoration:none;font-weight:600;font-size:.88rem;
+  background:#03C75A;color:#fff;padding:8px 14px;border-radius:9px}
+.navbtn svg{width:15px;height:15px}
+.empty{padding:40px 6px;color:var(--muted)}
+.empty button{font:inherit;margin-top:10px;border:1px solid var(--line);background:var(--paper);color:var(--ink);padding:6px 12px;border-radius:8px;cursor:pointer}
+.courses{margin-top:28px}
+.courses h2{font-family:"Gowun Batang",serif;font-size:1.3rem;margin:0 0 4px}
+.course{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px 16px;margin-top:10px}
+.course h3{font-size:1rem;margin:0 0 6px}
+.course ol{margin:0;padding-left:1.3em}
+.foot{margin-top:20px;font-size:.78rem;color:var(--muted)}
+
+
+/* 내 평가 */
+.mine{margin-top:12px;border:1px solid var(--line);border-radius:10px;background:var(--paper)}
+.mine summary{cursor:pointer;padding:8px 12px;font-size:.88rem;font-weight:600;list-style:none;display:flex;gap:8px;align-items:center}
+.mine summary::-webkit-details-marker{display:none}
+.mine summary::before{content:"+";display:inline-block;width:14px;color:var(--muted)}
+.mine[open] summary::before{content:"−"}
+.mine .sumstars{color:#E0A100;letter-spacing:1px}
+.mine .sumdate{font-weight:400;color:var(--muted);font-size:.8rem}
+.mbody{padding:0 12px 12px}
+.stars{display:flex;gap:2px;margin:2px 0 8px}
+.stars button{font-size:1.6rem;line-height:1;border:0;background:none;cursor:pointer;color:var(--line);padding:2px 3px}
+.stars button.on{color:#E0A100}
+.mbody textarea{width:100%;min-height:70px;font:inherit;font-size:.92rem;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);resize:vertical}
+.mrow{display:flex;align-items:center;gap:10px;margin-top:8px}
+.mrow .save{font:inherit;font-size:.88rem;font-weight:600;border:0;background:var(--ink);color:var(--paper);padding:7px 16px;border-radius:8px;cursor:pointer}
+.mrow .del{font:inherit;font-size:.82rem;border:0;background:none;color:var(--muted);text-decoration:underline;cursor:pointer;margin-left:auto}
+.mrow .msg{font-size:.82rem;color:var(--muted)}
+.mycomment{margin:10px 0 0;padding:8px 12px;border-left:3px solid #E0A100;background:color-mix(in srgb,#E0A100 8%,transparent);border-radius:0 8px 8px 0;font-size:.9rem}
+.mycomment b{color:#E0A100;letter-spacing:1px;font-weight:600;margin-right:6px}
+.dot.v{stroke:var(--ink);stroke-width:3}
+.storeNote{font-size:.78rem;color:var(--muted)}
+
+
+/* 네이버 지도 */
+.map{position:relative}
+#nmap{position:absolute;inset:0}
+.nm{width:16px;height:16px;border-radius:50%;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.35);cursor:pointer}
+.nm.t{background:#2F6F7E}.nm.f{background:#B8412F}.nm.c{background:#7A5230}
+.nm.h{border-color:#E0A100;border-width:3px}
+.nm.v{outline:3px solid #1E2A2E;outline-offset:0}
+.nm.on{width:22px;height:22px}
+.nmwrap{position:relative}
+.nmlabel{position:absolute;left:28px;top:0;white-space:nowrap;background:#fff;color:#1E2A2E;font:600 12px "IBM Plex Sans KR",sans-serif;padding:3px 8px;border-radius:6px;box-shadow:0 1px 4px rgba(0,0,0,.3)}
+
+/* 휴대폰: 위아래로 쌓고 지도는 상단에 고정 */
+@media (max-width:760px){
+  .app{height:auto;display:block}
+  header{padding:12px 14px;gap:8px}
+  .search{max-width:none;flex-basis:100%}
+  .body{display:block}
+  .mapPane{position:sticky;top:env(safe-area-inset-top,0px);z-index:2;background:var(--bg);padding:10px 12px 6px;border-right:0;border-bottom:1px solid var(--line)}
+  .map{height:34vh;flex:none}
+  .listPane{overflow:visible;padding:0 14px 40px}
+  .count{position:static}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<div class="app">
+<noscript><p style="margin:0;padding:10px 20px;background:#FFF4CC;color:#1E2A2E;font-size:.9rem">이 화면에서는 검색·필터·내 평가 기능이 작동하지 않습니다. 사파리나 크롬 브라우저로 열어 주세요.</p></noscript>
+  <header>
+    <h1>김포·강화 여행지도</h1>
+    <label class="search" id="searchBox">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="q" type="search" placeholder="장소, 음식, 분위기로 검색 (예: 밴댕이, 일몰)" aria-label="장소 검색">
+      <button type="button" id="clear" aria-label="검색어 지우기">×</button>
+    </label>
+    <div class="filters">
+      <div class="filters" role="group" aria-label="카테고리" id="catF"><button type="button" class="chip" data-v="전체" aria-pressed="true">전체</button><button type="button" class="chip" data-v="관광" aria-pressed="false"><span class="sw" style="background:var(--tour)"></span>관광</button><button type="button" class="chip" data-v="맛집" aria-pressed="false"><span class="sw" style="background:var(--food)"></span>맛집</button><button type="button" class="chip" data-v="카페" aria-pressed="false"><span class="sw" style="background:var(--cafe)"></span>카페</button></div>
+      <span class="sep" aria-hidden="true"></span>
+      <div class="filters" role="group" aria-label="지역" id="regionF"><button type="button" class="chip" data-v="all" aria-pressed="true">전체</button><button type="button" class="chip" data-v="g" aria-pressed="false">김포</button><button type="button" class="chip" data-v="k" aria-pressed="false">강화</button></div>
+      <span class="sep" aria-hidden="true"></span>
+      <button type="button" class="chip" id="hotBtn" aria-pressed="false">★ 평가 좋은 곳만</button>
+      <button type="button" class="chip" id="mineBtn" aria-pressed="false">✓ 내가 가본 곳</button>
+    </div>
+  </header>
+
+  <div class="body">
+    <section class="mapPane" aria-label="지도">
+      <div class="map" id="map"><svg viewBox="0 0 590 321" preserveAspectRatio="xMidYMid meet" role="img" aria-label="김포와 강화 여행지 위치 개략도">
+  <rect x="-2000" y="-2000" width="5000" height="5000" class="water"></rect>
+  <polygon points="0,0 590,0 590,37.8 480,44.1 420,31.5 340,18.9 0,10.1" class="land" style="opacity:.6"></polygon>
+  <polygon points="355,138.6 380,107.1 420,69.3 480,69.3 540,151.2 590,201.6 590,321.3 420,321.3 360,270.9 347,226.8 350,176.4" class="land"></polygon><polygon points="220,37.8 290,37.8 335,69.3 342,138.6 341,214.2 343,252 330,289.8 300,308.7 240,302.4 200,264.6 190,189 180,113.4 200,63" class="land"></polygon>
+  <polygon points="90,126 150,138.6 170,189 160,233.1 120,220.5 85,163.8" class="land"></polygon><polygon points="20,37.8 90,25.2 130,44.1 120,88.2 60,94.5 20,75.6" class="land"></polygon>
+  <text x="220" y="5" class="rlabel" text-anchor="middle">북한</text><text x="260" y="163.8" class="rlabel" text-anchor="middle">강화도</text><text x="130" y="173.9" class="rlabel" text-anchor="middle">석모도</text>
+  <text x="70" y="73.1" class="rlabel" text-anchor="middle">교동도</text><text x="500" y="214.2" class="rlabel" text-anchor="middle">김포</text><text x="440" y="46.6" class="wlabel" text-anchor="middle">한강 하구</text><text x="100" y="277.2" class="wlabel" text-anchor="middle">서해</text><circle class="dot t" data-i="0" cx="413" cy="94.5" r="7" tabindex="0" role="button" aria-label="애기봉평화생태공원"><title>애기봉평화생태공원</title></circle><circle class="dot t" data-i="1" cx="366" cy="153.7" r="7" tabindex="0" role="button" aria-label="문수산성"><title>문수산성</title></circle><circle class="dot t" data-i="2" cx="351" cy="224.3" r="7" tabindex="0" role="button" aria-label="덕포진"><title>덕포진</title></circle><circle class="dot t" data-i="3" cx="526" cy="263.3" r="7" tabindex="0" role="button" aria-label="김포 장릉"><title>김포 장릉</title></circle><circle class="dot t" data-i="4" cx="448" cy="233.1" r="7" tabindex="0" role="button" aria-label="라베니체 (구래동 수변거리)"><title>라베니체 (구래동 수변거리)</title></circle><circle class="dot t" data-i="5" cx="337" cy="257" r="7" tabindex="0" role="button" aria-label="초지진"><title>초지진</title></circle><circle class="dot t" data-i="6" cx="335" cy="200.3" r="7" tabindex="0" role="button" aria-label="광성보"><title>광성보</title></circle><circle class="dot t" data-i="7" cx="311" cy="255.8" r="7" tabindex="0" role="button" aria-label="전등사"><title>전등사</title></circle><circle class="dot t" data-i="8" cx="253" cy="272.2" r="7" tabindex="0" role="button" aria-label="마니산 참성단"><title>마니산 참성단</title></circle><circle class="dot t" data-i="9" cx="275" cy="298.6" r="7" tabindex="0" role="button" aria-label="동막해변"><title>동막해변</title></circle><circle class="dot t" data-i="10" cx="290" cy="283.5" r="7" tabindex="0" role="button" aria-label="강화 루지"><title>강화 루지</title></circle><circle class="dot t" data-i="11" cx="271" cy="73.1" r="7" tabindex="0" role="button" aria-label="강화 고인돌 (부근리 지석묘)"><title>강화 고인돌 (부근리 지석묘)</title></circle><circle class="dot t" data-i="12" cx="221" cy="52.9" r="7" tabindex="0" role="button" aria-label="강화평화전망대"><title>강화평화전망대</title></circle><circle class="dot t" data-i="13" cx="115" cy="152.5" r="7" tabindex="0" role="button" aria-label="석모도 보문사"><title>석모도 보문사</title></circle><circle class="dot t" data-i="14" cx="148" cy="205.4" r="7" tabindex="0" role="button" aria-label="석모도 미네랄온천"><title>석모도 미네랄온천</title></circle><circle class="dot t" data-i="15" cx="99" cy="61.7" r="7" tabindex="0" role="button" aria-label="교동 대룡시장"><title>교동 대룡시장</title></circle><circle class="dot f" data-i="16" cx="368" cy="238.1" r="7" tabindex="0" role="button" aria-label="대명항 수산물직판장"><title>대명항 수산물직판장</title></circle><circle class="dot f" data-i="17" cx="311" cy="110.9" r="7" tabindex="0" role="button" aria-label="강화풍물시장 (만복정)"><title>강화풍물시장 (만복정)</title></circle><circle class="dot f" data-i="18" cx="306" cy="105.8" r="7" tabindex="0" role="button" aria-label="일억조식당"><title>일억조식당</title></circle><circle class="dot f" data-i="19" cx="339" cy="163.8" r="7" tabindex="0" role="button" aria-label="더리미 장어마을"><title>더리미 장어마을</title></circle><circle class="dot f" data-i="20" cx="216" cy="298.6" r="7" tabindex="0" role="button" aria-label="선수포구 밴댕이마을"><title>선수포구 밴댕이마을</title></circle><circle class="dot c" data-i="21" cx="423" cy="88.2" r="7" tabindex="0" role="button" aria-label="스타벅스 애기봉생태공원점"><title>스타벅스 애기봉생태공원점</title></circle><circle class="dot c" data-i="22" cx="302" cy="103.3" r="7" tabindex="0" role="button" aria-label="조양방직"><title>조양방직</title></circle><circle class="dot c" data-i="23" cx="285" cy="301.1" r="7" tabindex="0" role="button" aria-label="토크라피"><title>토크라피</title></circle><circle class="dot c" data-i="24" cx="340" cy="233.1" r="7" tabindex="0" role="button" aria-label="아이나카페"><title>아이나카페</title></circle><circle class="dot f h" data-i="25" cx="313" cy="219.2" r="7" tabindex="0" role="button" aria-label="금문도"><title>금문도</title></circle><circle class="dot f h" data-i="26" cx="337" cy="279.7" r="7" tabindex="0" role="button" aria-label="꼬막한상"><title>꼬막한상</title></circle><circle class="dot f h" data-i="27" cx="305" cy="107.1" r="7" tabindex="0" role="button" aria-label="수라전통육개장 본점"><title>수라전통육개장 본점</title></circle><circle class="dot f h" data-i="28" cx="204" cy="158.8" r="7" tabindex="0" role="button" aria-label="강화도 꽃게향"><title>강화도 꽃게향</title></circle><circle class="dot f h" data-i="29" cx="194" cy="245.7" r="7" tabindex="0" role="button" aria-label="쌈밥이네"><title>쌈밥이네</title></circle><circle class="dot f h" data-i="30" cx="404" cy="166.3" r="7" tabindex="0" role="button" aria-label="참두부나라"><title>참두부나라</title></circle><circle class="dot c h" data-i="31" cx="311" cy="236.9" r="7" tabindex="0" role="button" aria-label="우트우트"><title>우트우트</title></circle><circle class="dot c h" data-i="32" cx="329" cy="133.6" r="7" tabindex="0" role="button" aria-label="프란쓰"><title>프란쓰</title></circle><circle class="dot c h" data-i="33" cx="301" cy="239.4" r="7" tabindex="0" role="button" aria-label="한옥카페 드리우니"><title>한옥카페 드리우니</title></circle><circle class="dot c h" data-i="34" cx="230" cy="281" r="7" tabindex="0" role="button" aria-label="멍때림 카페"><title>멍때림 카페</title></circle><circle class="dot c h" data-i="35" cx="460" cy="250.7" r="7" tabindex="0" role="button" aria-label="상두그레이"><title>상두그레이</title></circle><circle class="dot c h" data-i="36" cx="477.5" cy="211" r="7" tabindex="0" role="button" aria-label="55갤런"><title>55갤런</title></circle><text id="dlabel" class="dlabel"></text></svg></div>
+      <div class="mapnote"><span>점을 누르면 오른쪽 목록에서 찾아 줍니다<br><span class="storeNote" id="storeNote"></span></span><span class="key"><i style="background:var(--tour)"></i>관광<i style="background:var(--food)"></i>맛집<i style="background:var(--cafe)"></i>카페<i style="background:transparent;border:2px solid #E0A100"></i>평가 좋은 곳<i style="background:transparent;border:3px solid var(--ink)"></i>내가 가본 곳</span></div>
+    </section>
+
+    <section class="listPane" id="listPane" aria-label="장소 목록">
+      <div class="count" id="count" aria-live="polite">전체 37곳</div>
+      <div id="places">
+    <article class="place t" id="p0" data-i="0">
+      <h3>애기봉평화생태공원</h3>
+      <div class="meta"><b>관광</b>&nbsp;&nbsp;김포&nbsp;&nbsp;전망·안보</div>
+      <p>한강 하구 건너 북한 개풍군 마을이 맨눈으로 보이는 전망대와 생태공원입니다.</p>
+      <ul class="pros"><li>북한 땅을 가장 가까이서 볼 수 있는 곳 중 하나</li><li>생태관과 전망대가 함께 있어 볼거리가 많음</li><li>공원 산책로가 잘 정비돼 가족 나들이에 좋음</li></ul>
+      <p class="tip"><strong>팁</strong>&nbsp; 접경지역이라 온라인 사전 예약과 신분증이 필요합니다.</p>
+      <a class="navbtn" href="https://map.naver.com/p/search/%EC%95%A0%EA%B8%B0%EB%B4%89%ED%8F%89%ED%99%94%EC%83%9D%ED%83%9C%EA%B3%B5%EC%9B%90" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"></path><circle cx="12" cy="9.5" r="2.5"></circle></svg>네이버지도에서 열기</a>
+      <details class="mine" data-i="0">
+    <summary><span>내 평가 남기기</span></summary>
+    <div class="mbody">
+      <div class="stars" role="radiogroup" aria-label="별점"><button type="button" role="radio" aria-checked="false" aria-label="1점" data-n="1" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="2점" data-n="2" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="3점" data-n="3" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="4점" data-n="4" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="5점" data-n="5" class="">★</button></div>
+      <textarea placeholder="직접 가본 소감을 남겨 보세요 (예: 주차 편함, 흰짬뽕 강추)" maxlength="500"></textarea>
+      <div class="mrow"><button type="button" class="save">저장</button><span class="msg" aria-live="polite"></span></div>
+    </div></details>
+    </article>
+    <article class="place t" id="p1" data-i="1">
+      <h3>문수산성</h3>
+      <div class="meta"><b>관광</b>&nbsp;&nbsp;김포&nbsp;&nbsp;역사·등산</div>
+      <p>조선 숙종 때 강화도를 지키려고 쌓은 산성으로, 병인양요 때 프랑스군과 싸운 곳입니다.</p>
+      <ul class="pros"><li>정상에서 강화도·염하·한강 하구가 한눈에</li><li>왕복 2~3시간의 부담 없는 등산 코스</li><li>성곽길을 따라 걷는 맛이 좋음</li></ul>
+      <p class="tip"><strong>팁</strong>&nbsp; 편한 운동화 필수, 가을 단풍철이 특히 좋습니다.</p>
+      <a class="navbtn" href="https://map.naver.com/p/search/%EA%B9%80%ED%8F%AC%20%EB%AC%B8%EC%88%98%EC%82%B0%EC%84%B1" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"></path><circle cx="12" cy="9.5" r="2.5"></circle></svg>네이버지도에서 열기</a>
+      <details class="mine" data-i="1">
+    <summary><span>내 평가 남기기</span></summary>
+    <div class="mbody">
+      <div class="stars" role="radiogroup" aria-label="별점"><button type="button" role="radio" aria-checked="false" aria-label="1점" data-n="1" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="2점" data-n="2" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="3점" data-n="3" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="4점" data-n="4" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="5점" data-n="5" class="">★</button></div>
+      <textarea placeholder="직접 가본 소감을 남겨 보세요 (예: 주차 편함, 흰짬뽕 강추)" maxlength="500"></textarea>
+      <div class="mrow"><button type="button" class="save">저장</button><span class="msg" aria-live="polite"></span></div>
+    </div></details>
+    </article>
+    <article class="place t" id="p2" data-i="2">
+      <h3>덕포진</h3>
+      <div class="meta"><b>관광</b>&nbsp;&nbsp;김포&nbsp;&nbsp;역사</div>
+      <p>조선시대 바닷길을 지키던 포대 유적입니다. 강 건너 강화 광성보·초지진과 마주 보며, 뱃사공 손돌의 전설이 깃든 곳입니다.</p>
+      <ul class="pros"><li>사람이 적어 조용히 산책하기 좋음</li><li>염하의 빠른 물살과 강화 해안을 조망</li><li>대명항과 가까워 함께 묶기 좋음</li></ul>
+      <p class="tip"><strong>팁</strong>&nbsp; 30분이면 충분히 둘러볼 수 있습니다.</p>
+      <a class="navbtn" href="https://map.naver.com/p/search/%EA%B9%80%ED%8F%AC%20%EB%8D%95%ED%8F%AC%EC%A7%84" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"></path><circle cx="12" cy="9.5" r="2.5"></circle></svg>네이버지도에서 열기</a>
+      <details class="mine" data-i="2">
+    <summary><span>내 평가 남기기</span></summary>
+    <div class="mbody">
+      <div class="stars" role="radiogroup" aria-label="별점"><button type="button" role="radio" aria-checked="false" aria-label="1점" data-n="1" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="2점" data-n="2" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="3점" data-n="3" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="4점" data-n="4" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="5점" data-n="5" class="">★</button></div>
+      <textarea placeholder="직접 가본 소감을 남겨 보세요 (예: 주차 편함, 흰짬뽕 강추)" maxlength="500"></textarea>
+      <div class="mrow"><button type="button" class="save">저장</button><span class="msg" aria-live="polite"></span></div>
+    </div></details>
+    </article>
+    <article class="place t" id="p3" data-i="3">
+      <h3>김포 장릉</h3>
+      <div class="meta"><b>관광</b>&nbsp;&nbsp;김포&nbsp;&nbsp;역사·산책</div>
+      <p>인조의 부모인 원종과 인헌왕후의 능으로, 유네스코 세계유산 조선왕릉 중 하나입니다.</p>
+      <ul class="pros"><li>서울에서 가장 가까운 코스</li><li>울창한 숲길과 연못이 있어 조용한 산책에 최적</li><li>입장료가 저렴함</li></ul>
+      <p class="tip"><strong>팁</strong>&nbsp; 월요일은 휴무인 경우가 많으니 확인하세요.</p>
+      <a class="navbtn" href="https://map.naver.com/p/search/%EA%B9%80%ED%8F%AC%20%EC%9E%A5%EB%A6%89" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"></path><circle cx="12" cy="9.5" r="2.5"></circle></svg>네이버지도에서 열기</a>
+      <details class="mine" data-i="3">
+    <summary><span>내 평가 남기기</span></summary>
+    <div class="mbody">
+      <div class="stars" role="radiogroup" aria-label="별점"><button type="button" role="radio" aria-checked="false" aria-label="1점" data-n="1" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="2점" data-n="2" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="3점" data-n="3" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="4점" data-n="4" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="5점" data-n="5" class="">★</button></div>
+      <textarea placeholder="직접 가본 소감을 남겨 보세요 (예: 주차 편함, 흰짬뽕 강추)" maxlength="500"></textarea>
+      <div class="mrow"><button type="button" class="save">저장</button><span class="msg" aria-live="polite"></span></div>
+    </div></details>
+    </article>
+    <article class="place t" id="p4" data-i="4">
+      <h3>라베니체 (구래동 수변거리)</h3>
+      <div class="meta"><b>관광</b>&nbsp;&nbsp;김포&nbsp;&nbsp;산책·야경</div>
+      <p>김포한강신도시에 있는 운하 따라 조성된 상가 거리로, 이탈리아 베네치아 분위기를 살렸습니다.</p>
+      <ul class="pros"><li>물길 따라 저녁 산책하기 좋음</li><li>식당·카페가 모여 있어 저녁 식사 장소로 편리</li><li>야경이 예쁨</li></ul>
+      <p class="tip"><strong>팁</strong>&nbsp; 여행 마지막 저녁 코스로 추천합니다.</p>
+      <a class="navbtn" href="https://map.naver.com/p/search/%EA%B9%80%ED%8F%AC%20%EB%9D%BC%EB%B2%A0%EB%8B%88%EC%B2%B4" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"></path><circle cx="12" cy="9.5" r="2.5"></circle></svg>네이버지도에서 열기</a>
+      <details class="mine" data-i="4">
+    <summary><span>내 평가 남기기</span></summary>
+    <div class="mbody">
+      <div class="stars" role="radiogroup" aria-label="별점"><button type="button" role="radio" aria-checked="false" aria-label="1점" data-n="1" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="2점" data-n="2" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="3점" data-n="3" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="4점" data-n="4" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="5점" data-n="5" class="">★</button></div>
+      <textarea placeholder="직접 가본 소감을 남겨 보세요 (예: 주차 편함, 흰짬뽕 강추)" maxlength="500"></textarea>
+      <div class="mrow"><button type="button" class="save">저장</button><span class="msg" aria-live="polite"></span></div>
+    </div></details>
+    </article>
+    <article class="place t" id="p5" data-i="5">
+      <h3>초지진</h3>
+      <div class="meta"><b>관광</b>&nbsp;&nbsp;강화&nbsp;&nbsp;역사</div>
+      <p>병인양요·신미양요·운요호 사건이 일어난 해안 요새입니다. 성벽과 노송에 당시 포탄 자국이 남아 있습니다.</p>
+      <ul class="pros"><li>초지대교를 건너자마자 있어 강화 여행의 첫 코스로 딱</li><li>역사의 흔적을 눈으로 직접 확인</li><li>짧게 둘러보기 좋음</li></ul>
+      <p class="tip"><strong>팁</strong>&nbsp; 주차장 바로 앞이라 이동이 편합니다.</p>
+      <a class="navbtn" href="https://map.naver.com/p/search/%EA%B0%95%ED%99%94%20%EC%B4%88%EC%A7%80%EC%A7%84" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"></path><circle cx="12" cy="9.5" r="2.5"></circle></svg>네이버지도에서 열기</a>
+      <details class="mine" data-i="5">
+    <summary><span>내 평가 남기기</span></summary>
+    <div class="mbody">
+      <div class="stars" role="radiogroup" aria-label="별점"><button type="button" role="radio" aria-checked="false" aria-label="1점" data-n="1" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="2점" data-n="2" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="3점" data-n="3" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="4점" data-n="4" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="5점" data-n="5" class="">★</button></div>
+      <textarea placeholder="직접 가본 소감을 남겨 보세요 (예: 주차 편함, 흰짬뽕 강추)" maxlength="500"></textarea>
+      <div class="mrow"><button type="button" class="save">저장</button><span class="msg" aria-live="polite"></span></div>
+    </div></details>
+    </article>
+    <article class="place t" id="p6" data-i="6">
+      <h3>광성보</h3>
+      <div class="meta"><b>관광</b>&nbsp;&nbsp;강화&nbsp;&nbsp;역사·산책</div>
+      <p>신미양요 때 미군과 가장 치열하게 싸운 곳입니다. 바다 쪽으로 용머리처럼 튀어나온 용두돈대가 백미입니다.</p>
+      <ul class="pros"><li>강화 해안 요새 중 경치가 가장 좋다는 평</li><li>소나무 숲길 산책(40분 내외)</li><li>역사와 풍경을 함께 즐길 수 있음</li></ul>
+      <p class="tip"><strong>팁</strong>&nbsp; 오후 햇살이 비칠 때 사진이 잘 나옵니다.</p>
+      <a class="navbtn" href="https://map.naver.com/p/search/%EA%B0%95%ED%99%94%20%EA%B4%91%EC%84%B1%EB%B3%B4" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"></path><circle cx="12" cy="9.5" r="2.5"></circle></svg>네이버지도에서 열기</a>
+      <details class="mine" data-i="6">
+    <summary><span>내 평가 남기기</span></summary>
+    <div class="mbody">
+      <div class="stars" role="radiogroup" aria-label="별점"><button type="button" role="radio" aria-checked="false" aria-label="1점" data-n="1" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="2점" data-n="2" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="3점" data-n="3" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="4점" data-n="4" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="5점" data-n="5" class="">★</button></div>
+      <textarea placeholder="직접 가본 소감을 남겨 보세요 (예: 주차 편함, 흰짬뽕 강추)" maxlength="500"></textarea>
+      <div class="mrow"><button type="button" class="save">저장</button><span class="msg" aria-live="polite"></span></div>
+    </div></details>
+    </article>
+    <article class="place t" id="p7" data-i="7">
+      <h3>전등사</h3>
+      <div class="meta"><b>관광</b>&nbsp;&nbsp;강화&nbsp;&nbsp;사찰·숲길</div>
+      <p>정족산성(삼랑성) 안에 자리한, 우리나라에서 가장 오래된 절 중 하나로 알려진 고찰입니다. 대웅전 처마 밑 '나부상' 전설이 유명합니다.</p>
+      <ul class="pros"><li>산성 성곽길과 숲이 어우러진 산책</li><li>계절마다 분위기가 달라 사계절 추천</li><li>템플스테이 운영</li></ul>
+      <p class="tip"><strong>팁</strong>&nbsp; 남문·동문 주차장 중 가까운 곳으로 가세요.</p>
+      <a class="navbtn" href="https://map.naver.com/p/search/%EA%B0%95%ED%99%94%20%EC%A0%84%EB%93%B1%EC%82%AC" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"></path><circle cx="12" cy="9.5" r="2.5"></circle></svg>네이버지도에서 열기</a>
+      <details class="mine" data-i="7">
+    <summary><span>내 평가 남기기</span></summary>
+    <div class="mbody">
+      <div class="stars" role="radiogroup" aria-label="별점"><button type="button" role="radio" aria-checked="false" aria-label="1점" data-n="1" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="2점" data-n="2" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="3점" data-n="3" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="4점" data-n="4" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="5점" data-n="5" class="">★</button></div>
+      <textarea placeholder="직접 가본 소감을 남겨 보세요 (예: 주차 편함, 흰짬뽕 강추)" maxlength="500"></textarea>
+      <div class="mrow"><button type="button" class="save">저장</button><span class="msg" aria-live="polite"></span></div>
+    </div></details>
+    </article>
+    <article class="place t" id="p8" data-i="8">
+      <h3>마니산 참성단</h3>
+      <div class="meta"><b>관광</b>&nbsp;&nbsp;강화&nbsp;&nbsp;등산</div>
+      <p>단군이 하늘에 제사를 지냈다고 전해지는 참성단이 정상에 있는 산입니다. 전국체전 성화를 채화하는 곳이기도 합니다.</p>
+      <ul class="pros"><li>정상에서 서해 바다와 섬들이 파노라마로</li><li>계단로·단군로 등 코스 선택 가능</li><li>새해 해맞이 등산 명소</li></ul>
+      <p class="tip"><strong>팁</strong>&nbsp; 계단이 많아 무릎 보호대와 물을 챙기세요.</p>
+      <a class="navbtn" href="https://map.naver.com/p/search/%EB%A7%88%EB%8B%88%EC%82%B0" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"></path><circle cx="12" cy="9.5" r="2.5"></circle></svg>네이버지도에서 열기</a>
+      <details class="mine" data-i="8">
+    <summary><span>내 평가 남기기</span></summary>
+    <div class="mbody">
+      <div class="stars" role="radiogroup" aria-label="별점"><button type="button" role="radio" aria-checked="false" aria-label="1점" data-n="1" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="2점" data-n="2" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="3점" data-n="3" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="4점" data-n="4" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="5점" data-n="5" class="">★</button></div>
+      <textarea placeholder="직접 가본 소감을 남겨 보세요 (예: 주차 편함, 흰짬뽕 강추)" maxlength="500"></textarea>
+      <div class="mrow"><button type="button" class="save">저장</button><span class="msg" aria-live="polite"></span></div>
+    </div></details>
+    </article>
+    <article class="place t" id="p9" data-i="9">
+      <h3>동막해변</h3>
+      <div class="meta"><b>관광</b>&nbsp;&nbsp;강화&nbsp;&nbsp;해변·갯벌</div>
+      <p>강화의 대표 해변으로, 물이 빠지면 끝없이 넓은 갯벌이 드러납니다.</p>
+      <ul class="pros"><li>아이와 함께 갯벌 체험</li><li>바로 옆 분오리돈대는 일몰 명소</li><li>해안도로 드라이브 코스와 연결</li></ul>
+      <p class="tip"><strong>팁</strong>&nbsp; 물때(밀물·썰물 시간)를 미리 확인하면 갯벌 체험이 수월합니다.</p>
+      <a class="navbtn" href="https://map.naver.com/p/search/%EA%B0%95%ED%99%94%20%EB%8F%99%EB%A7%89%ED%95%B4%EB%B3%80" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"></path><circle cx="12" cy="9.5" r="2.5"></circle></svg>네이버지도에서 열기</a>
+      <details class="mine" data-i="9">
+    <summary><span>내 평가 남기기</span></summary>
+    <div class="mbody">
+      <div class="stars" role="radiogroup" aria-label="별점"><button type="button" role="radio" aria-checked="false" aria-label="1점" data-n="1" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="2점" data-n="2" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="3점" data-n="3" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="4점" data-n="4" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="5점" data-n="5" class="">★</button></div>
+      <textarea placeholder="직접 가본 소감을 남겨 보세요 (예: 주차 편함, 흰짬뽕 강추)" maxlength="500"></textarea>
+      <div class="mrow"><button type="button" class="save">저장</button><span class="msg" aria-live="polite"></span></div>
+    </div></details>
+    </article>
+    <article class="place t" id="p10" data-i="10">
+      <h3>강화 루지</h3>
+      <div class="meta"><b>관광</b>&nbsp;&nbsp;강화&nbsp;&nbsp;체험</div>
+      <p>바다를 내려다보며 곤돌라로 올라가 썰매 카트(루지)로 내려오는 체험 시설입니다.</p>
+      <ul class="pros"><li>아이·가족·친구 누구나 즐길 수 있음</li><li>내려오는 내내 서해 바다 풍경</li><li>동막해변과 가까워 묶어서 방문하기 좋음</li></ul>
+      <p class="tip"><strong>팁</strong>&nbsp; 주말 오후는 대기가 길어 오전 방문을 추천합니다.</p>
+      <a class="navbtn" href="https://map.naver.com/p/search/%EA%B0%95%ED%99%94%EC%94%A8%EC%82%AC%EC%9D%B4%EB%93%9C%EB%A6%AC%EC%A1%B0%ED%8A%B8%20%EB%A3%A8%EC%A7%80" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"></path><circle cx="12" cy="9.5" r="2.5"></circle></svg>네이버지도에서 열기</a>
+      <details class="mine" data-i="10">
+    <summary><span>내 평가 남기기</span></summary>
+    <div class="mbody">
+      <div class="stars" role="radiogroup" aria-label="별점"><button type="button" role="radio" aria-checked="false" aria-label="1점" data-n="1" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="2점" data-n="2" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="3점" data-n="3" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="4점" data-n="4" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="5점" data-n="5" class="">★</button></div>
+      <textarea placeholder="직접 가본 소감을 남겨 보세요 (예: 주차 편함, 흰짬뽕 강추)" maxlength="500"></textarea>
+      <div class="mrow"><button type="button" class="save">저장</button><span class="msg" aria-live="polite"></span></div>
+    </div></details>
+    </article>
+    <article class="place t" id="p11" data-i="11">
+      <h3>강화 고인돌 (부근리 지석묘)</h3>
+      <div class="meta"><b>관광</b>&nbsp;&nbsp;강화&nbsp;&nbsp;역사</div>
+      <p>유네스코 세계유산으로 지정된 우리나라 대표 탁자식 고인돌입니다.</p>
+      <ul class="pros"><li>교과서에 나오는 그 고인돌을 직접 볼 수 있음</li><li>바로 옆 강화역사박물관·자연사박물관과 함께 관람</li><li>넓은 잔디밭이라 아이들 뛰놀기 좋음</li></ul>
+      <p class="tip"><strong>팁</strong>&nbsp; 박물관까지 묶으면 1~2시간 코스입니다.</p>
+      <a class="navbtn" href="https://map.naver.com/p/search/%EA%B0%95%ED%99%94%20%EB%B6%80%EA%B7%BC%EB%A6%AC%20%EC%A7%80%EC%84%9D%EB%AC%98" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"></path><circle cx="12" cy="9.5" r="2.5"></circle></svg>네이버지도에서 열기</a>
+      <details class="mine" data-i="11">
+    <summary><span>내 평가 남기기</span></summary>
+    <div class="mbody">
+      <div class="stars" role="radiogroup" aria-label="별점"><button type="button" role="radio" aria-checked="false" aria-label="1점" data-n="1" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="2점" data-n="2" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="3점" data-n="3" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="4점" data-n="4" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="5점" data-n="5" class="">★</button></div>
+      <textarea placeholder="직접 가본 소감을 남겨 보세요 (예: 주차 편함, 흰짬뽕 강추)" maxlength="500"></textarea>
+      <div class="mrow"><button type="button" class="save">저장</button><span class="msg" aria-live="polite"></span></div>
+    </div></details>
+    </article>
+    <article class="place t" id="p12" data-i="12">
+      <h3>강화평화전망대</h3>
+      <div class="meta"><b>관광</b>&nbsp;&nbsp;강화&nbsp;&nbsp;전망·안보</div>
+      <p>강화도 북쪽 끝에서 바다 건너 북한 마을과 들판을 바라보는 전망대입니다.</p>
+      <ul class="pros"><li>망원경으로 북한 마을 모습까지 관찰</li><li>애기봉과는 또 다른 각도의 북녘 풍경</li><li>고인돌·교동도와 동선이 가까움</li></ul>
+      <p class="tip"><strong>팁</strong>&nbsp; 맑은 날 가야 멀리까지 잘 보입니다.</p>
+      <a class="navbtn" href="https://map.naver.com/p/search/%EA%B0%95%ED%99%94%ED%8F%89%ED%99%94%EC%A0%84%EB%A7%9D%EB%8C%80" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"></path><circle cx="12" cy="9.5" r="2.5"></circle></svg>네이버지도에서 열기</a>
+      <details class="mine" data-i="12">
+    <summary><span>내 평가 남기기</span></summary>
+    <div class="mbody">
+      <div class="stars" role="radiogroup" aria-label="별점"><button type="button" role="radio" aria-checked="false" aria-label="1점" data-n="1" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="2점" data-n="2" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="3점" data-n="3" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="4점" data-n="4" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="5점" data-n="5" class="">★</button></div>
+      <textarea placeholder="직접 가본 소감을 남겨 보세요 (예: 주차 편함, 흰짬뽕 강추)" maxlength="500"></textarea>
+      <div class="mrow"><button type="button" class="save">저장</button><span class="msg" aria-live="polite"></span></div>
+    </div></details>
+    </article>
+    <article class="place t" id="p13" data-i="13">
+      <h3>석모도 보문사</h3>
+      <div class="meta"><b>관광</b>&nbsp;&nbsp;강화&nbsp;&nbsp;사찰·낙조</div>
+      <p>낙가산 절벽의 눈썹바위 아래 마애관음보살이 새겨진 절로, 우리나라 3대 해상 관음성지로 꼽힙니다.</p>
+      <ul class="pros"><li>석모대교 개통으로 차로 바로 이동</li><li>계단을 오르면 서해 바다가 한눈에</li><li>해 질 녘 낙조가 특히 아름다움</li></ul>
+      <p class="tip"><strong>팁</strong>&nbsp; 눈썹바위까지 가파른 계단이 400여 개라 천천히 오르세요.</p>
+      <a class="navbtn" href="https://map.naver.com/p/search/%EC%84%9D%EB%AA%A8%EB%8F%84%20%EB%B3%B4%EB%AC%B8%EC%82%AC" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"></path><circle cx="12" cy="9.5" r="2.5"></circle></svg>네이버지도에서 열기</a>
+      <details class="mine" data-i="13">
+    <summary><span>내 평가 남기기</span></summary>
+    <div class="mbody">
+      <div class="stars" role="radiogroup" aria-label="별점"><button type="button" role="radio" aria-checked="false" aria-label="1점" data-n="1" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="2점" data-n="2" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="3점" data-n="3" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="4점" data-n="4" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="5점" data-n="5" class="">★</button></div>
+      <textarea placeholder="직접 가본 소감을 남겨 보세요 (예: 주차 편함, 흰짬뽕 강추)" maxlength="500"></textarea>
+      <div class="mrow"><button type="button" class="save">저장</button><span class="msg" aria-live="polite"></span></div>
+    </div></details>
+    </article>
+    <article class="place t" id="p14" data-i="14">
+      <h3>석모도 미네랄온천</h3>
+      <div class="meta"><b>관광</b>&nbsp;&nbsp;강화&nbsp;&nbsp;휴식</div>
+      <p>바다를 바라보며 몸을 담글 수 있는 노천 온천입니다.</p>
+      <ul class="pros"><li>서해 일몰을 보며 즐기는 노천탕</li><li>여행 중 피로를 풀기 좋음</li><li>보문사와 가까워 한 번에 방문</li></ul>
+      <p class="tip"><strong>팁</strong>&nbsp; 주말·일몰 시간대는 대기가 길 수 있습니다.</p>
+      <a class="navbtn" href="https://map.naver.com/p/search/%EC%84%9D%EB%AA%A8%EB%8F%84%20%EB%AF%B8%EB%84%A4%EB%9E%84%EC%98%A8%EC%B2%9C" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"></path><circle cx="12" cy="9.5" r="2.5"></circle></svg>네이버지도에서 열기</a>
+      <details class="mine" data-i="14">
+    <summary><span>내 평가 남기기</span></summary>
+    <div class="mbody">
+      <div class="stars" role="radiogroup" aria-label="별점"><button type="button" role="radio" aria-checked="false" aria-label="1점" data-n="1" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="2점" data-n="2" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="3점" data-n="3" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="4점" data-n="4" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="5점" data-n="5" class="">★</button></div>
+      <textarea placeholder="직접 가본 소감을 남겨 보세요 (예: 주차 편함, 흰짬뽕 강추)" maxlength="500"></textarea>
+      <div class="mrow"><button type="button" class="save">저장</button><span class="msg" aria-live="polite"></span></div>
+    </div></details>
+    </article>
+    <article class="place t" id="p15" data-i="15">
+      <h3>교동 대룡시장</h3>
+      <div class="meta"><b>관광</b>&nbsp;&nbsp;강화&nbsp;&nbsp;레트로 골목</div>
+      <p>한국전쟁 때 황해도에서 건너온 피란민들이 만든 골목시장으로, 1960~70년대 풍경이 그대로 남아 있습니다.</p>
+      <ul class="pros"><li>옛날 이발소·다방·점방 등 레트로 골목 산책</li><li>교동대교로 차로 쉽게 이동</li><li>쌍화차, 옛날 과자 등 소소한 먹거리</li></ul>
+      <p class="tip"><strong>팁</strong>&nbsp; 교동대교 진입 시 출입 절차가 있을 수 있어 신분증을 챙기세요.</p>
+      <a class="navbtn" href="https://map.naver.com/p/search/%EA%B5%90%EB%8F%99%20%EB%8C%80%EB%A3%A1%EC%8B%9C%EC%9E%A5" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"></path><circle cx="12" cy="9.5" r="2.5"></circle></svg>네이버지도에서 열기</a>
+      <details class="mine" data-i="15">
+    <summary><span>내 평가 남기기</span></summary>
+    <div class="mbody">
+      <div class="stars" role="radiogroup" aria-label="별점"><button type="button" role="radio" aria-checked="false" aria-label="1점" data-n="1" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="2점" data-n="2" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="3점" data-n="3" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="4점" data-n="4" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="5점" data-n="5" class="">★</button></div>
+      <textarea placeholder="직접 가본 소감을 남겨 보세요 (예: 주차 편함, 흰짬뽕 강추)" maxlength="500"></textarea>
+      <div class="mrow"><button type="button" class="save">저장</button><span class="msg" aria-live="polite"></span></div>
+    </div></details>
+    </article>
+    <article class="place f" id="p16" data-i="16">
+      <h3>대명항 수산물직판장</h3>
+      <div class="meta"><b>맛집</b>&nbsp;&nbsp;김포&nbsp;&nbsp;회·꽃게</div>
+      <p>김포의 대표 어항입니다. 직판장에서 해산물을 고른 뒤 근처 식당에서 바로 회나 찜으로 먹을 수 있습니다. 퇴역 군함을 활용한 함상공원도 있습니다.</p>
+      <ul class="pros"><li>갓 잡은 꽃게·새우·회를 저렴하게</li><li>초지대교 바로 앞이라 강화 가는 길에 들르기 좋음</li><li>식사 후 함상공원 구경은 아이들이 좋아함</li></ul>
+      <p class="tip"><strong>팁</strong>&nbsp; 꽃게는 봄(암꽃게)·가을(수꽃게)이 제철입니다.</p>
+      <a class="navbtn" href="https://map.naver.com/p/search/%EB%8C%80%EB%AA%85%ED%95%AD%20%EC%88%98%EC%82%B0%EB%AC%BC%EC%A7%81%ED%8C%90%EC%9E%A5" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"></path><circle cx="12" cy="9.5" r="2.5"></circle></svg>네이버지도에서 열기</a>
+      <details class="mine" data-i="16">
+    <summary><span>내 평가 남기기</span></summary>
+    <div class="mbody">
+      <div class="stars" role="radiogroup" aria-label="별점"><button type="button" role="radio" aria-checked="false" aria-label="1점" data-n="1" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="2점" data-n="2" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="3점" data-n="3" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="4점" data-n="4" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="5점" data-n="5" class="">★</button></div>
+      <textarea placeholder="직접 가본 소감을 남겨 보세요 (예: 주차 편함, 흰짬뽕 강추)" maxlength="500"></textarea>
+      <div class="mrow"><button type="button" class="save">저장</button><span class="msg" aria-live="polite"></span></div>
+    </div></details>
+    </article>
+    <article class="place f" id="p17" data-i="17">
+      <h3>강화풍물시장 (만복정)</h3>
+      <div class="meta"><b>맛집</b>&nbsp;&nbsp;강화&nbsp;&nbsp;밴댕이</div>
+      <p>강화 특산물이 모두 모이는 시장입니다. 2층 식당가의 만복정은 밴댕이회·밴댕이무침으로 블루리본에 여러 번 선정되고 방송에도 소개된 곳입니다.</p>
+      <ul class="pros"><li>강화 대표 별미 밴댕이를 제대로 맛볼 수 있음</li><li>1층에서 순무김치·인삼·화문석 구경과 장보기</li><li>2일·7일엔 오일장도 열려 더 활기참</li></ul>
+      <p class="tip"><strong>팁</strong>&nbsp; 밴댕이는 5~6월이 제철입니다. 매달 1·3째 월요일은 휴무일 수 있어요.</p>
+      <a class="navbtn" href="https://map.naver.com/p/search/%EA%B0%95%ED%99%94%ED%92%8D%EB%AC%BC%EC%8B%9C%EC%9E%A5%20%EB%A7%8C%EB%B3%B5%EC%A0%95" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"></path><circle cx="12" cy="9.5" r="2.5"></circle></svg>네이버지도에서 열기</a>
+      <details class="mine" data-i="17">
+    <summary><span>내 평가 남기기</span></summary>
+    <div class="mbody">
+      <div class="stars" role="radiogroup" aria-label="별점"><button type="button" role="radio" aria-checked="false" aria-label="1점" data-n="1" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="2점" data-n="2" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="3점" data-n="3" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="4점" data-n="4" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="5점" data-n="5" class="">★</button></div>
+      <textarea placeholder="직접 가본 소감을 남겨 보세요 (예: 주차 편함, 흰짬뽕 강추)" maxlength="500"></textarea>
+      <div class="mrow"><button type="button" class="save">저장</button><span class="msg" aria-live="polite"></span></div>
+    </div></details>
+    </article>
+    <article class="place f" id="p18" data-i="18">
+      <h3>일억조식당</h3>
+      <div class="meta"><b>맛집</b>&nbsp;&nbsp;강화&nbsp;&nbsp;젓국갈비</div>
+      <p>강화 향토음식 젓국갈비로 알려진 강화읍의 식당입니다. 젓국갈비는 돼지갈비와 두부를 넣고 강화 새우젓으로 간을 한 맑은 탕입니다.</p>
+      <ul class="pros"><li>강화에서만 맛볼 수 있는 향토 음식</li><li>새우젓 덕분에 국물이 시원하고 담백함</li><li>풍물시장·조양방직과 가까워 동선이 좋음</li></ul>
+      <p class="tip"><strong>팁</strong>&nbsp; 골목이 좁아 근처 공영주차장에 세우고 걸어가는 게 편합니다.</p>
+      <a class="navbtn" href="https://map.naver.com/p/search/%EA%B0%95%ED%99%94%20%EC%9D%BC%EC%96%B5%EC%A1%B0%EC%8B%9D%EB%8B%B9" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"></path><circle cx="12" cy="9.5" r="2.5"></circle></svg>네이버지도에서 열기</a>
+      <details class="mine" data-i="18">
+    <summary><span>내 평가 남기기</span></summary>
+    <div class="mbody">
+      <div class="stars" role="radiogroup" aria-label="별점"><button type="button" role="radio" aria-checked="false" aria-label="1점" data-n="1" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="2점" data-n="2" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="3점" data-n="3" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="4점" data-n="4" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="5점" data-n="5" class="">★</button></div>
+      <textarea placeholder="직접 가본 소감을 남겨 보세요 (예: 주차 편함, 흰짬뽕 강추)" maxlength="500"></textarea>
+      <div class="mrow"><button type="button" class="save">저장</button><span class="msg" aria-live="polite"></span></div>
+    </div></details>
+    </article>
+    <article class="place f" id="p19" data-i="19">
+      <h3>더리미 장어마을</h3>
+      <div class="meta"><b>맛집</b>&nbsp;&nbsp;강화&nbsp;&nbsp;장어구이</div>
+      <p>강화대교 남쪽 해안도로를 따라 장어구이집이 모여 있는 장어 거리입니다.</p>
+      <ul class="pros"><li>여러 집이 모여 있어 골라 가는 재미</li><li>염하 바다를 보며 먹는 식당이 많음</li><li>광성보·초지진 가는 길목</li></ul>
+      <p class="tip"><strong>팁</strong>&nbsp; 가게마다 가격과 곁들임이 달라 비교해 보고 들어가세요.</p>
+      <a class="navbtn" href="https://map.naver.com/p/search/%EB%8D%94%EB%A6%AC%EB%AF%B8%20%EC%9E%A5%EC%96%B4%EB%A7%88%EC%9D%84" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"></path><circle cx="12" cy="9.5" r="2.5"></circle></svg>네이버지도에서 열기</a>
+      <details class="mine" data-i="19">
+    <summary><span>내 평가 남기기</span></summary>
+    <div class="mbody">
+      <div class="stars" role="radiogroup" aria-label="별점"><button type="button" role="radio" aria-checked="false" aria-label="1점" data-n="1" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="2점" data-n="2" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="3점" data-n="3" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="4점" data-n="4" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="5점" data-n="5" class="">★</button></div>
+      <textarea placeholder="직접 가본 소감을 남겨 보세요 (예: 주차 편함, 흰짬뽕 강추)" maxlength="500"></textarea>
+      <div class="mrow"><button type="button" class="save">저장</button><span class="msg" aria-live="polite"></span></div>
+    </div></details>
+    </article>
+    <article class="place f" id="p20" data-i="20">
+      <h3>선수포구 밴댕이마을</h3>
+      <div class="meta"><b>맛집</b>&nbsp;&nbsp;강화&nbsp;&nbsp;밴댕이·회</div>
+      <p>강화 남쪽 화도면의 작은 포구로, 밴댕이 전문 식당들이 모여 있습니다.</p>
+      <ul class="pros"><li>포구 바로 앞에서 먹는 싱싱한 밴댕이</li><li>풍물시장보다 한적한 분위기</li><li>동막해변·마니산 여행과 묶기 좋음</li></ul>
+      <p class="tip"><strong>팁</strong>&nbsp; 5월 밴댕이 철에는 주말 점심이 붐빕니다.</p>
+      <a class="navbtn" href="https://map.naver.com/p/search/%EC%84%A0%EC%88%98%ED%8F%AC%EA%B5%AC%20%EB%B0%B4%EB%8C%95%EC%9D%B4%EB%A7%88%EC%9D%84" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"></path><circle cx="12" cy="9.5" r="2.5"></circle></svg>네이버지도에서 열기</a>
+      <details class="mine" data-i="20">
+    <summary><span>내 평가 남기기</span></summary>
+    <div class="mbody">
+      <div class="stars" role="radiogroup" aria-label="별점"><button type="button" role="radio" aria-checked="false" aria-label="1점" data-n="1" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="2점" data-n="2" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="3점" data-n="3" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="4점" data-n="4" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="5점" data-n="5" class="">★</button></div>
+      <textarea placeholder="직접 가본 소감을 남겨 보세요 (예: 주차 편함, 흰짬뽕 강추)" maxlength="500"></textarea>
+      <div class="mrow"><button type="button" class="save">저장</button><span class="msg" aria-live="polite"></span></div>
+    </div></details>
+    </article>
+    <article class="place c" id="p21" data-i="21">
+      <h3>스타벅스 애기봉생태공원점</h3>
+      <div class="meta"><b>카페</b>&nbsp;&nbsp;김포&nbsp;&nbsp;북한뷰</div>
+      <p>애기봉 조강전망대 안에 있는 스타벅스로, 약 1.4km 떨어진 북한 땅을 바라보며 커피를 마실 수 있습니다.</p>
+      <ul class="pros"><li>세계적으로도 드문 '북한이 보이는 스타벅스'</li><li>전망대·생태공원 관람과 한 번에</li><li>한정 기념 머그 등 굿즈</li></ul>
+      <p class="tip"><strong>팁</strong>&nbsp; 카페만 따로 예약은 없고, 애기봉 공원 입장 예약이 먼저 필요합니다. 창가 자리는 오전이 여유롭습니다.</p>
+      <a class="navbtn" href="https://map.naver.com/p/search/%EC%8A%A4%ED%83%80%EB%B2%85%EC%8A%A4%20%EA%B9%80%ED%8F%AC%EC%95%A0%EA%B8%B0%EB%B4%89%EC%83%9D%ED%83%9C%EA%B3%B5%EC%9B%90%EC%A0%90" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"></path><circle cx="12" cy="9.5" r="2.5"></circle></svg>네이버지도에서 열기</a>
+      <details class="mine" data-i="21">
+    <summary><span>내 평가 남기기</span></summary>
+    <div class="mbody">
+      <div class="stars" role="radiogroup" aria-label="별점"><button type="button" role="radio" aria-checked="false" aria-label="1점" data-n="1" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="2점" data-n="2" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="3점" data-n="3" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="4점" data-n="4" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="5점" data-n="5" class="">★</button></div>
+      <textarea placeholder="직접 가본 소감을 남겨 보세요 (예: 주차 편함, 흰짬뽕 강추)" maxlength="500"></textarea>
+      <div class="mrow"><button type="button" class="save">저장</button><span class="msg" aria-live="polite"></span></div>
+    </div></details>
+    </article>
+    <article class="place c" id="p22" data-i="22">
+      <h3>조양방직</h3>
+      <div class="meta"><b>카페</b>&nbsp;&nbsp;강화&nbsp;&nbsp;레트로</div>
+      <p>일제강점기에 세워진 방직공장을 그대로 살려 만든 대형 카페 겸 갤러리입니다.</p>
+      <ul class="pros"><li>옛 공장 건물과 골동품으로 가득한 레트로 분위기</li><li>사진 찍기 좋은 곳이 많음</li><li>강화읍 구도심·풍물시장과 걸어서 이동</li></ul>
+      <p class="tip"><strong>팁</strong>&nbsp; 주말 오후엔 붐비니 오전이나 평일이 여유롭습니다.</p>
+      <a class="navbtn" href="https://map.naver.com/p/search/%EC%A1%B0%EC%96%91%EB%B0%A9%EC%A7%81" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"></path><circle cx="12" cy="9.5" r="2.5"></circle></svg>네이버지도에서 열기</a>
+      <details class="mine" data-i="22">
+    <summary><span>내 평가 남기기</span></summary>
+    <div class="mbody">
+      <div class="stars" role="radiogroup" aria-label="별점"><button type="button" role="radio" aria-checked="false" aria-label="1점" data-n="1" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="2점" data-n="2" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="3점" data-n="3" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="4점" data-n="4" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="5점" data-n="5" class="">★</button></div>
+      <textarea placeholder="직접 가본 소감을 남겨 보세요 (예: 주차 편함, 흰짬뽕 강추)" maxlength="500"></textarea>
+      <div class="mrow"><button type="button" class="save">저장</button><span class="msg" aria-live="polite"></span></div>
+    </div></details>
+    </article>
+    <article class="place c" id="p23" data-i="23">
+      <h3>토크라피</h3>
+      <div class="meta"><b>카페</b>&nbsp;&nbsp;강화&nbsp;&nbsp;오션뷰</div>
+      <p>동막해변 바로 앞, 흰 건물에 빨간 지붕이 이국적인 오션뷰 카페입니다.</p>
+      <ul class="pros"><li>눈앞에 서해 바다가 펼쳐지는 전망</li><li>크로크무슈·티라미수 등 디저트가 인기</li><li>동막해변 산책과 일몰 감상 후 들르기 좋음</li></ul>
+      <p class="tip"><strong>팁</strong>&nbsp; 물때에 따라 바다 대신 갯벌이 보일 수 있습니다.</p>
+      <a class="navbtn" href="https://map.naver.com/p/search/%EA%B0%95%ED%99%94%20%ED%86%A0%ED%81%AC%EB%9D%BC%ED%94%BC" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"></path><circle cx="12" cy="9.5" r="2.5"></circle></svg>네이버지도에서 열기</a>
+      <details class="mine" data-i="23">
+    <summary><span>내 평가 남기기</span></summary>
+    <div class="mbody">
+      <div class="stars" role="radiogroup" aria-label="별점"><button type="button" role="radio" aria-checked="false" aria-label="1점" data-n="1" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="2점" data-n="2" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="3점" data-n="3" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="4점" data-n="4" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="5점" data-n="5" class="">★</button></div>
+      <textarea placeholder="직접 가본 소감을 남겨 보세요 (예: 주차 편함, 흰짬뽕 강추)" maxlength="500"></textarea>
+      <div class="mrow"><button type="button" class="save">저장</button><span class="msg" aria-live="polite"></span></div>
+    </div></details>
+    </article>
+    <article class="place c" id="p24" data-i="24">
+      <h3>아이나카페</h3>
+      <div class="meta"><b>카페</b>&nbsp;&nbsp;강화&nbsp;&nbsp;오션뷰·브런치</div>
+      <p>길상면 해안동로에 있는 약 400평 규모의 유럽풍 대형 오션뷰 카페로, 브런치와 베이커리가 강점입니다.</p>
+      <ul class="pros"><li>1·2층과 야외 테라스까지 넓어 자리 걱정이 적음</li><li>브런치로 식사까지 해결 가능</li><li>반려동물 동반 가능</li></ul>
+      <p class="tip"><strong>팁</strong>&nbsp; 평일엔 브레이크타임이 있을 수 있으니 확인하세요.</p>
+      <a class="navbtn" href="https://map.naver.com/p/search/%EA%B0%95%ED%99%94%20%EC%95%84%EC%9D%B4%EB%82%98%EC%B9%B4%ED%8E%98" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"></path><circle cx="12" cy="9.5" r="2.5"></circle></svg>네이버지도에서 열기</a>
+      <details class="mine" data-i="24">
+    <summary><span>내 평가 남기기</span></summary>
+    <div class="mbody">
+      <div class="stars" role="radiogroup" aria-label="별점"><button type="button" role="radio" aria-checked="false" aria-label="1점" data-n="1" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="2점" data-n="2" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="3점" data-n="3" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="4점" data-n="4" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="5점" data-n="5" class="">★</button></div>
+      <textarea placeholder="직접 가본 소감을 남겨 보세요 (예: 주차 편함, 흰짬뽕 강추)" maxlength="500"></textarea>
+      <div class="mrow"><button type="button" class="save">저장</button><span class="msg" aria-live="polite"></span></div>
+    </div></details>
+    </article>
+    <article class="place f" id="p25" data-i="25">
+      <h3>금문도<span class="badge">★ 평가 좋은 곳</span></h3>
+      <div class="meta"><b>맛집</b>&nbsp;&nbsp;강화&nbsp;&nbsp;중식</div>
+      <p>강화 순무·속노랑고구마 같은 강화 식재료로 만든 중식당으로, 강화에서 손꼽히는 인기 맛집입니다.</p>
+      <ul class="pros"><li>순무 탕수육, 고구마 간짜장처럼 여기서만 먹는 메뉴</li><li>흰짬뽕이 대표 메뉴로 평이 좋음</li><li>주차장이 넓음</li></ul>
+      <p class="tip"><strong>팁</strong>&nbsp; 점심 위주(오후 2시 반경 마감)로 운영하고 월요일은 쉬는 편이에요. 네이버 예약을 하고 가면 대기가 줄어듭니다.</p>
+      <a class="navbtn" href="https://map.naver.com/p/search/%EA%B8%88%EB%AC%B8%EB%8F%84%20%EA%B0%95%ED%99%94" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"></path><circle cx="12" cy="9.5" r="2.5"></circle></svg>네이버지도에서 열기</a>
+      <details class="mine" data-i="25">
+    <summary><span>내 평가 남기기</span></summary>
+    <div class="mbody">
+      <div class="stars" role="radiogroup" aria-label="별점"><button type="button" role="radio" aria-checked="false" aria-label="1점" data-n="1" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="2점" data-n="2" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="3점" data-n="3" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="4점" data-n="4" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="5점" data-n="5" class="">★</button></div>
+      <textarea placeholder="직접 가본 소감을 남겨 보세요 (예: 주차 편함, 흰짬뽕 강추)" maxlength="500"></textarea>
+      <div class="mrow"><button type="button" class="save">저장</button><span class="msg" aria-live="polite"></span></div>
+    </div></details>
+    </article>
+    <article class="place f" id="p26" data-i="26">
+      <h3>꼬막한상<span class="badge">★ 평가 좋은 곳</span></h3>
+      <div class="meta"><b>맛집</b>&nbsp;&nbsp;강화&nbsp;&nbsp;꼬막비빔밥</div>
+      <p>동막해변 가는 해안남로에 있는 꼬막 요리 전문점입니다.</p>
+      <ul class="pros"><li>통통한 꼬막을 직접 비벼 먹는 꼬막비빔밥</li><li>시원한 국물 요리도 함께 호평</li><li>서빙 로봇이 있어 아이들이 좋아함</li></ul>
+      <p class="tip"><strong>팁</strong>&nbsp; 화요일은 쉬는 경우가 많으니 확인하세요.</p>
+      <a class="navbtn" href="https://map.naver.com/p/search/%EA%BC%AC%EB%A7%89%ED%95%9C%EC%83%81%20%EA%B0%95%ED%99%94" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"></path><circle cx="12" cy="9.5" r="2.5"></circle></svg>네이버지도에서 열기</a>
+      <details class="mine" data-i="26">
+    <summary><span>내 평가 남기기</span></summary>
+    <div class="mbody">
+      <div class="stars" role="radiogroup" aria-label="별점"><button type="button" role="radio" aria-checked="false" aria-label="1점" data-n="1" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="2점" data-n="2" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="3점" data-n="3" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="4점" data-n="4" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="5점" data-n="5" class="">★</button></div>
+      <textarea placeholder="직접 가본 소감을 남겨 보세요 (예: 주차 편함, 흰짬뽕 강추)" maxlength="500"></textarea>
+      <div class="mrow"><button type="button" class="save">저장</button><span class="msg" aria-live="polite"></span></div>
+    </div></details>
+    </article>
+    <article class="place f" id="p27" data-i="27">
+      <h3>수라전통육개장 본점<span class="badge">★ 평가 좋은 곳</span></h3>
+      <div class="meta"><b>맛집</b>&nbsp;&nbsp;강화&nbsp;&nbsp;육개장</div>
+      <p>강화읍 구도심에 있는 전통 방식 육개장 집으로, 리뷰 수와 평가가 모두 높은 곳입니다.</p>
+      <ul class="pros"><li>맵기가 과하지 않아 누구나 먹기 편함</li><li>풍물시장·조양방직과 걸어서 가까움</li><li>아침부터 저녁까지 운영해 시간 맞추기 쉬움</li></ul>
+      <p class="tip"><strong>팁</strong>&nbsp; 든든한 한 끼가 필요할 때 좋은 선택입니다.</p>
+      <a class="navbtn" href="https://map.naver.com/p/search/%EC%88%98%EB%9D%BC%EC%A0%84%ED%86%B5%EC%9C%A1%EA%B0%9C%EC%9E%A5%20%EA%B0%95%ED%99%94" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"></path><circle cx="12" cy="9.5" r="2.5"></circle></svg>네이버지도에서 열기</a>
+      <details class="mine" data-i="27">
+    <summary><span>내 평가 남기기</span></summary>
+    <div class="mbody">
+      <div class="stars" role="radiogroup" aria-label="별점"><button type="button" role="radio" aria-checked="false" aria-label="1점" data-n="1" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="2점" data-n="2" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="3점" data-n="3" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="4점" data-n="4" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="5점" data-n="5" class="">★</button></div>
+      <textarea placeholder="직접 가본 소감을 남겨 보세요 (예: 주차 편함, 흰짬뽕 강추)" maxlength="500"></textarea>
+      <div class="mrow"><button type="button" class="save">저장</button><span class="msg" aria-live="polite"></span></div>
+    </div></details>
+    </article>
+    <article class="place f" id="p28" data-i="28">
+      <h3>강화도 꽃게향<span class="badge">★ 평가 좋은 곳</span></h3>
+      <div class="meta"><b>맛집</b>&nbsp;&nbsp;강화&nbsp;&nbsp;꽃게탕·게장</div>
+      <p>석모대교 입구 외포리에 있는 꽃게 요리 전문점입니다.</p>
+      <ul class="pros"><li>시원한 꽃게탕과 간장게장이 대표 메뉴</li><li>강화 특색 반찬이 함께 나옴</li><li>석모도(보문사·온천) 가는 길에 들르기 좋음</li></ul>
+      <p class="tip"><strong>팁</strong>&nbsp; 화요일은 쉬는 경우가 많아요. 게 요리는 시세에 따라 가격이 달라집니다.</p>
+      <a class="navbtn" href="https://map.naver.com/p/search/%EA%B0%95%ED%99%94%EB%8F%84%20%EA%BD%83%EA%B2%8C%ED%96%A5" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"></path><circle cx="12" cy="9.5" r="2.5"></circle></svg>네이버지도에서 열기</a>
+      <details class="mine" data-i="28">
+    <summary><span>내 평가 남기기</span></summary>
+    <div class="mbody">
+      <div class="stars" role="radiogroup" aria-label="별점"><button type="button" role="radio" aria-checked="false" aria-label="1점" data-n="1" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="2점" data-n="2" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="3점" data-n="3" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="4점" data-n="4" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="5점" data-n="5" class="">★</button></div>
+      <textarea placeholder="직접 가본 소감을 남겨 보세요 (예: 주차 편함, 흰짬뽕 강추)" maxlength="500"></textarea>
+      <div class="mrow"><button type="button" class="save">저장</button><span class="msg" aria-live="polite"></span></div>
+    </div></details>
+    </article>
+    <article class="place f" id="p29" data-i="29">
+      <h3>쌈밥이네<span class="badge">★ 평가 좋은 곳</span></h3>
+      <div class="meta"><b>맛집</b>&nbsp;&nbsp;강화&nbsp;&nbsp;쌈밥·솥밥</div>
+      <p>화도면 해안남로의 쌈밥 정식집으로, 제육볶음과 솥밥을 쌈채소에 싸 먹는 한 상입니다.</p>
+      <ul class="pros"><li>쌈채소를 마음껏 리필</li><li>짜지 않은 된장과 갓 지은 솥밥</li><li>서쪽 해안도로 드라이브 중 식사하기 좋음</li></ul>
+      <p class="tip"><strong>팁</strong>&nbsp; 주말 점심은 붐비니 조금 일찍 가세요.</p>
+      <a class="navbtn" href="https://map.naver.com/p/search/%EC%8C%88%EB%B0%A5%EC%9D%B4%EB%84%A4%20%EA%B0%95%ED%99%94" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"></path><circle cx="12" cy="9.5" r="2.5"></circle></svg>네이버지도에서 열기</a>
+      <details class="mine" data-i="29">
+    <summary><span>내 평가 남기기</span></summary>
+    <div class="mbody">
+      <div class="stars" role="radiogroup" aria-label="별점"><button type="button" role="radio" aria-checked="false" aria-label="1점" data-n="1" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="2점" data-n="2" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="3점" data-n="3" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="4점" data-n="4" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="5점" data-n="5" class="">★</button></div>
+      <textarea placeholder="직접 가본 소감을 남겨 보세요 (예: 주차 편함, 흰짬뽕 강추)" maxlength="500"></textarea>
+      <div class="mrow"><button type="button" class="save">저장</button><span class="msg" aria-live="polite"></span></div>
+    </div></details>
+    </article>
+    <article class="place f" id="p30" data-i="30">
+      <h3>참두부나라<span class="badge">★ 평가 좋은 곳</span></h3>
+      <div class="meta"><b>맛집</b>&nbsp;&nbsp;김포&nbsp;&nbsp;손두부</div>
+      <p>김포 통진읍에 있는 손두부 전문 식당입니다.</p>
+      <ul class="pros"><li>직접 만든 고소한 두부를 기본으로 내줌</li><li>순두부·제육·황태구이 등 메뉴가 고르게 호평</li><li>식사 후 나오는 식혜가 인기</li></ul>
+      <p class="tip"><strong>팁</strong>&nbsp; 애기봉·문수산성에 들렀다 강화로 넘어가기 전 식사 장소로 좋습니다.</p>
+      <a class="navbtn" href="https://map.naver.com/p/search/%EC%B0%B8%EB%91%90%EB%B6%80%EB%82%98%EB%9D%BC%20%EA%B9%80%ED%8F%AC" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"></path><circle cx="12" cy="9.5" r="2.5"></circle></svg>네이버지도에서 열기</a>
+      <details class="mine" data-i="30">
+    <summary><span>내 평가 남기기</span></summary>
+    <div class="mbody">
+      <div class="stars" role="radiogroup" aria-label="별점"><button type="button" role="radio" aria-checked="false" aria-label="1점" data-n="1" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="2점" data-n="2" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="3점" data-n="3" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="4점" data-n="4" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="5점" data-n="5" class="">★</button></div>
+      <textarea placeholder="직접 가본 소감을 남겨 보세요 (예: 주차 편함, 흰짬뽕 강추)" maxlength="500"></textarea>
+      <div class="mrow"><button type="button" class="save">저장</button><span class="msg" aria-live="polite"></span></div>
+    </div></details>
+    </article>
+    <article class="place c" id="p31" data-i="31">
+      <h3>우트우트<span class="badge">★ 평가 좋은 곳</span></h3>
+      <div class="meta"><b>카페</b>&nbsp;&nbsp;강화&nbsp;&nbsp;베이커리</div>
+      <p>전등사 근처 온수리에 있는 베이커리 카페로, 커피와 빵 모두 평이 좋습니다.</p>
+      <ul class="pros"><li>소금빵·케이크 등 빵 종류가 다양하고 맛있다는 평</li><li>창밖으로 온수리 성공회성당 풍경</li><li>1~3층까지 좌석이 넉넉하고 주차장이 넓음</li></ul>
+      <p class="tip"><strong>팁</strong>&nbsp; 인기 빵은 오후에 떨어지니 이른 시간이 좋습니다.</p>
+      <a class="navbtn" href="https://map.naver.com/p/search/%EC%9A%B0%ED%8A%B8%EC%9A%B0%ED%8A%B8%20%EA%B0%95%ED%99%94" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"></path><circle cx="12" cy="9.5" r="2.5"></circle></svg>네이버지도에서 열기</a>
+      <details class="mine" data-i="31">
+    <summary><span>내 평가 남기기</span></summary>
+    <div class="mbody">
+      <div class="stars" role="radiogroup" aria-label="별점"><button type="button" role="radio" aria-checked="false" aria-label="1점" data-n="1" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="2점" data-n="2" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="3점" data-n="3" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="4점" data-n="4" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="5점" data-n="5" class="">★</button></div>
+      <textarea placeholder="직접 가본 소감을 남겨 보세요 (예: 주차 편함, 흰짬뽕 강추)" maxlength="500"></textarea>
+      <div class="mrow"><button type="button" class="save">저장</button><span class="msg" aria-live="polite"></span></div>
+    </div></details>
+    </article>
+    <article class="place c" id="p32" data-i="32">
+      <h3>프란쓰<span class="badge">★ 평가 좋은 곳</span></h3>
+      <div class="meta"><b>카페</b>&nbsp;&nbsp;강화&nbsp;&nbsp;한옥 찻집</div>
+      <p>선원면 더리미 근처의 한옥과 정원을 살린 찻집입니다.</p>
+      <ul class="pros"><li>직접 블렌딩한 차가 특히 기억에 남는다는 평</li><li>동화 같은 한옥 정원 분위기</li><li>더리미 장어마을과 가까움</li></ul>
+      <p class="tip"><strong>팁</strong>&nbsp; 수요일은 쉬는 경우가 많고 평일은 오후 6시쯤 닫아요.</p>
+      <a class="navbtn" href="https://map.naver.com/p/search/%ED%94%84%EB%9E%80%EC%93%B0%20%EA%B0%95%ED%99%94" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"></path><circle cx="12" cy="9.5" r="2.5"></circle></svg>네이버지도에서 열기</a>
+      <details class="mine" data-i="32">
+    <summary><span>내 평가 남기기</span></summary>
+    <div class="mbody">
+      <div class="stars" role="radiogroup" aria-label="별점"><button type="button" role="radio" aria-checked="false" aria-label="1점" data-n="1" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="2점" data-n="2" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="3점" data-n="3" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="4점" data-n="4" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="5점" data-n="5" class="">★</button></div>
+      <textarea placeholder="직접 가본 소감을 남겨 보세요 (예: 주차 편함, 흰짬뽕 강추)" maxlength="500"></textarea>
+      <div class="mrow"><button type="button" class="save">저장</button><span class="msg" aria-live="polite"></span></div>
+    </div></details>
+    </article>
+    <article class="place c" id="p33" data-i="33">
+      <h3>한옥카페 드리우니<span class="badge">★ 평가 좋은 곳</span></h3>
+      <div class="meta"><b>카페</b>&nbsp;&nbsp;강화&nbsp;&nbsp;한옥</div>
+      <p>온수리에 있는 넓은 한옥 카페로, 앞마당 잔디가 예쁩니다.</p>
+      <ul class="pros"><li>한옥 마당에서 사진 찍기 좋음</li><li>팥빙수·앙버터 모나카 같은 전통 디저트</li><li>주차장이 넓고 전등사와 가까움</li></ul>
+      <p class="tip"><strong>팁</strong>&nbsp; 여름엔 팥빙수를 추천하는 후기가 많습니다.</p>
+      <a class="navbtn" href="https://map.naver.com/p/search/%EB%93%9C%EB%A6%AC%EC%9A%B0%EB%8B%88%20%EA%B0%95%ED%99%94" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"></path><circle cx="12" cy="9.5" r="2.5"></circle></svg>네이버지도에서 열기</a>
+      <details class="mine" data-i="33">
+    <summary><span>내 평가 남기기</span></summary>
+    <div class="mbody">
+      <div class="stars" role="radiogroup" aria-label="별점"><button type="button" role="radio" aria-checked="false" aria-label="1점" data-n="1" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="2점" data-n="2" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="3점" data-n="3" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="4점" data-n="4" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="5점" data-n="5" class="">★</button></div>
+      <textarea placeholder="직접 가본 소감을 남겨 보세요 (예: 주차 편함, 흰짬뽕 강추)" maxlength="500"></textarea>
+      <div class="mrow"><button type="button" class="save">저장</button><span class="msg" aria-live="polite"></span></div>
+    </div></details>
+    </article>
+    <article class="place c" id="p34" data-i="34">
+      <h3>멍때림 카페<span class="badge">★ 평가 좋은 곳</span></h3>
+      <div class="meta"><b>카페</b>&nbsp;&nbsp;강화&nbsp;&nbsp;전망·힐링</div>
+      <p>마니산 자락 언덕 위에서 탁 트인 풍경을 보며 쉬어 가는 카페입니다.</p>
+      <ul class="pros"><li>이름처럼 조용히 멍하니 쉬기 좋은 분위기</li><li>마니산과 먼 바다가 한눈에</li><li>좌석이 여러 곳에 흩어져 있어 한적함</li></ul>
+      <p class="tip"><strong>팁</strong>&nbsp; 올라가는 길이 1차선이라 주말엔 천천히 운전하세요.</p>
+      <a class="navbtn" href="https://map.naver.com/p/search/%EA%B0%95%ED%99%94%20%EB%A9%8D%EB%95%8C%EB%A6%BC%20%EC%B9%B4%ED%8E%98" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"></path><circle cx="12" cy="9.5" r="2.5"></circle></svg>네이버지도에서 열기</a>
+      <details class="mine" data-i="34">
+    <summary><span>내 평가 남기기</span></summary>
+    <div class="mbody">
+      <div class="stars" role="radiogroup" aria-label="별점"><button type="button" role="radio" aria-checked="false" aria-label="1점" data-n="1" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="2점" data-n="2" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="3점" data-n="3" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="4점" data-n="4" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="5점" data-n="5" class="">★</button></div>
+      <textarea placeholder="직접 가본 소감을 남겨 보세요 (예: 주차 편함, 흰짬뽕 강추)" maxlength="500"></textarea>
+      <div class="mrow"><button type="button" class="save">저장</button><span class="msg" aria-live="polite"></span></div>
+    </div></details>
+    </article>
+    <article class="place c" id="p35" data-i="35">
+      <h3>상두그레이<span class="badge">★ 평가 좋은 곳</span></h3>
+      <div class="meta"><b>카페</b>&nbsp;&nbsp;김포&nbsp;&nbsp;스페셜티 커피</div>
+      <p>김포 양촌에 있는 스페셜티 커피 카페로, 커피 맛으로 특히 평가가 높습니다.</p>
+      <ul class="pros"><li>원두를 골라 마시는 핸드드립 커피</li><li>넓고 세련된 실내, 앞쪽의 자연 풍경</li><li>빵 종류도 다양함</li></ul>
+      <p class="tip"><strong>팁</strong>&nbsp; 커피를 좋아한다면 김포에서 꼭 들러볼 만한 곳입니다.</p>
+      <a class="navbtn" href="https://map.naver.com/p/search/%EC%83%81%EB%91%90%EA%B7%B8%EB%A0%88%EC%9D%B4%20%EA%B9%80%ED%8F%AC" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"></path><circle cx="12" cy="9.5" r="2.5"></circle></svg>네이버지도에서 열기</a>
+      <details class="mine" data-i="35">
+    <summary><span>내 평가 남기기</span></summary>
+    <div class="mbody">
+      <div class="stars" role="radiogroup" aria-label="별점"><button type="button" role="radio" aria-checked="false" aria-label="1점" data-n="1" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="2점" data-n="2" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="3점" data-n="3" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="4점" data-n="4" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="5점" data-n="5" class="">★</button></div>
+      <textarea placeholder="직접 가본 소감을 남겨 보세요 (예: 주차 편함, 흰짬뽕 강추)" maxlength="500"></textarea>
+      <div class="mrow"><button type="button" class="save">저장</button><span class="msg" aria-live="polite"></span></div>
+    </div></details>
+    </article>
+    <article class="place c" id="p36" data-i="36">
+      <h3>55갤런<span class="badge">★ 평가 좋은 곳</span></h3>
+      <div class="meta"><b>카페</b>&nbsp;&nbsp;김포&nbsp;&nbsp;대형·아트</div>
+      <p>김포대로변의 3층 대형 카페로, 재활용 예술 작품과 식물로 채워진 갤러리 같은 공간입니다.</p>
+      <ul class="pros"><li>볼거리가 많아 구경하는 재미</li><li>넓어서 자리 걱정이 적음</li><li>베이커리·디저트도 호평</li></ul>
+      <p class="tip"><strong>팁</strong>&nbsp; 서울에서 강화 가는 길 초입이라 첫 휴식 장소로 좋습니다.</p>
+      <a class="navbtn" href="https://map.naver.com/p/search/55%EA%B0%A4%EB%9F%B0%20%EA%B9%80%ED%8F%AC" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"></path><circle cx="12" cy="9.5" r="2.5"></circle></svg>네이버지도에서 열기</a>
+      <details class="mine" data-i="36">
+    <summary><span>내 평가 남기기</span></summary>
+    <div class="mbody">
+      <div class="stars" role="radiogroup" aria-label="별점"><button type="button" role="radio" aria-checked="false" aria-label="1점" data-n="1" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="2점" data-n="2" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="3점" data-n="3" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="4점" data-n="4" class="">★</button><button type="button" role="radio" aria-checked="false" aria-label="5점" data-n="5" class="">★</button></div>
+      <textarea placeholder="직접 가본 소감을 남겨 보세요 (예: 주차 편함, 흰짬뽕 강추)" maxlength="500"></textarea>
+      <div class="mrow"><button type="button" class="save">저장</button><span class="msg" aria-live="polite"></span></div>
+    </div></details>
+    </article></div>
+      <div class="courses" id="courses">
+        <h2>추천 코스</h2>
+        <div class="course">
+          <h3>당일치기 (서울 출발)</h3>
+          <ol>
+            <li>대명항에서 이른 점심으로 회·꽃게</li>
+            <li>초지대교 건너 초지진</li>
+            <li>해안도로 따라 광성보 산책</li>
+            <li>아이나카페에서 커피와 디저트</li>
+            <li>전등사 숲길</li>
+            <li>동막해변 일몰 후 토크라피</li>
+          </ol>
+        </div>
+        <div class="course">
+          <h3>1박 2일</h3>
+          <ol>
+            <li>1일차: 애기봉(스타벅스) → 문수산성 → 강화 고인돌 → 풍물시장 만복정 점심 → 조양방직 → 석모도 미네랄온천 일몰</li>
+            <li>2일차: 보문사 → 교동 대룡시장 → 강화평화전망대 → 더리미 장어마을 점심 → 귀경</li>
+          </ol>
+        </div>
+        <p class="foot">지도는 위치 관계를 보여주는 개략도입니다. 운영 시간, 휴무일, 예약 필요 여부는 방문 전 네이버지도에서 꼭 확인하세요.</p>
+      </div>
+    </section>
+  </div>
+</div>
+
+<script>
+const P = [
+ // ===== 관광 =====
+ {n:"애기봉평화생태공원",r:"g",c:"관광",s:"전망·안보",lat:37.755,lng:126.593,q:"애기봉평화생태공원",
+  d:"한강 하구 건너 북한 개풍군 마을이 맨눈으로 보이는 전망대와 생태공원입니다.",
+  p:["북한 땅을 가장 가까이서 볼 수 있는 곳 중 하나","생태관과 전망대가 함께 있어 볼거리가 많음","공원 산책로가 잘 정비돼 가족 나들이에 좋음"],
+  t:"접경지역이라 온라인 사전 예약과 신분증이 필요합니다."},
+ {n:"문수산성",r:"g",c:"관광",s:"역사·등산",lat:37.708,lng:126.546,q:"김포 문수산성",
+  d:"조선 숙종 때 강화도를 지키려고 쌓은 산성으로, 병인양요 때 프랑스군과 싸운 곳입니다.",
+  p:["정상에서 강화도·염하·한강 하구가 한눈에","왕복 2~3시간의 부담 없는 등산 코스","성곽길을 따라 걷는 맛이 좋음"],
+  t:"편한 운동화 필수, 가을 단풍철이 특히 좋습니다."},
+ {n:"덕포진",r:"g",c:"관광",s:"역사",lat:37.652,lng:126.531,q:"김포 덕포진",
+  d:"조선시대 바닷길을 지키던 포대 유적입니다. 강 건너 강화 광성보·초지진과 마주 보며, 뱃사공 손돌의 전설이 깃든 곳입니다.",
+  p:["사람이 적어 조용히 산책하기 좋음","염하의 빠른 물살과 강화 해안을 조망","대명항과 가까워 함께 묶기 좋음"],
+  t:"30분이면 충분히 둘러볼 수 있습니다."},
+ {n:"김포 장릉",r:"g",c:"관광",s:"역사·산책",lat:37.621,lng:126.706,q:"김포 장릉",
+  d:"인조의 부모인 원종과 인헌왕후의 능으로, 유네스코 세계유산 조선왕릉 중 하나입니다.",
+  p:["서울에서 가장 가까운 코스","울창한 숲길과 연못이 있어 조용한 산책에 최적","입장료가 저렴함"],
+  t:"월요일은 휴무인 경우가 많으니 확인하세요."},
+ {n:"라베니체 (구래동 수변거리)",r:"g",c:"관광",s:"산책·야경",lat:37.645,lng:126.628,q:"김포 라베니체",
+  d:"김포한강신도시에 있는 운하 따라 조성된 상가 거리로, 이탈리아 베네치아 분위기를 살렸습니다.",
+  p:["물길 따라 저녁 산책하기 좋음","식당·카페가 모여 있어 저녁 식사 장소로 편리","야경이 예쁨"],
+  t:"여행 마지막 저녁 코스로 추천합니다."},
+ {n:"초지진",r:"k",c:"관광",s:"역사",lat:37.626,lng:126.517,q:"강화 초지진",
+  d:"병인양요·신미양요·운요호 사건이 일어난 해안 요새입니다. 성벽과 노송에 당시 포탄 자국이 남아 있습니다.",
+  p:["초지대교를 건너자마자 있어 강화 여행의 첫 코스로 딱","역사의 흔적을 눈으로 직접 확인","짧게 둘러보기 좋음"],
+  t:"주차장 바로 앞이라 이동이 편합니다."},
+ {n:"광성보",r:"k",c:"관광",s:"역사·산책",lat:37.671,lng:126.515,q:"강화 광성보",
+  d:"신미양요 때 미군과 가장 치열하게 싸운 곳입니다. 바다 쪽으로 용머리처럼 튀어나온 용두돈대가 백미입니다.",
+  p:["강화 해안 요새 중 경치가 가장 좋다는 평","소나무 숲길 산책(40분 내외)","역사와 풍경을 함께 즐길 수 있음"],
+  t:"오후 햇살이 비칠 때 사진이 잘 나옵니다."},
+ {n:"전등사",r:"k",c:"관광",s:"사찰·숲길",lat:37.627,lng:126.491,q:"강화 전등사",
+  d:"정족산성(삼랑성) 안에 자리한, 우리나라에서 가장 오래된 절 중 하나로 알려진 고찰입니다. 대웅전 처마 밑 '나부상' 전설이 유명합니다.",
+  p:["산성 성곽길과 숲이 어우러진 산책","계절마다 분위기가 달라 사계절 추천","템플스테이 운영"],
+  t:"남문·동문 주차장 중 가까운 곳으로 가세요."},
+ {n:"마니산 참성단",r:"k",c:"관광",s:"등산",lat:37.614,lng:126.433,q:"마니산",
+  d:"단군이 하늘에 제사를 지냈다고 전해지는 참성단이 정상에 있는 산입니다. 전국체전 성화를 채화하는 곳이기도 합니다.",
+  p:["정상에서 서해 바다와 섬들이 파노라마로","계단로·단군로 등 코스 선택 가능","새해 해맞이 등산 명소"],
+  t:"계단이 많아 무릎 보호대와 물을 챙기세요."},
+ {n:"동막해변",r:"k",c:"관광",s:"해변·갯벌",lat:37.593,lng:126.455,q:"강화 동막해변",
+  d:"강화의 대표 해변으로, 물이 빠지면 끝없이 넓은 갯벌이 드러납니다.",
+  p:["아이와 함께 갯벌 체험","바로 옆 분오리돈대는 일몰 명소","해안도로 드라이브 코스와 연결"],
+  t:"물때(밀물·썰물 시간)를 미리 확인하면 갯벌 체험이 수월합니다."},
+ {n:"강화 루지",r:"k",c:"관광",s:"체험",lat:37.605,lng:126.470,q:"강화씨사이드리조트 루지",
+  d:"바다를 내려다보며 곤돌라로 올라가 썰매 카트(루지)로 내려오는 체험 시설입니다.",
+  p:["아이·가족·친구 누구나 즐길 수 있음","내려오는 내내 서해 바다 풍경","동막해변과 가까워 묶어서 방문하기 좋음"],
+  t:"주말 오후는 대기가 길어 오전 방문을 추천합니다."},
+ {n:"강화 고인돌 (부근리 지석묘)",r:"k",c:"관광",s:"역사",lat:37.772,lng:126.451,q:"강화 부근리 지석묘",
+  d:"유네스코 세계유산으로 지정된 우리나라 대표 탁자식 고인돌입니다.",
+  p:["교과서에 나오는 그 고인돌을 직접 볼 수 있음","바로 옆 강화역사박물관·자연사박물관과 함께 관람","넓은 잔디밭이라 아이들 뛰놀기 좋음"],
+  t:"박물관까지 묶으면 1~2시간 코스입니다."},
+ {n:"강화평화전망대",r:"k",c:"관광",s:"전망·안보",lat:37.788,lng:126.401,q:"강화평화전망대",
+  d:"강화도 북쪽 끝에서 바다 건너 북한 마을과 들판을 바라보는 전망대입니다.",
+  p:["망원경으로 북한 마을 모습까지 관찰","애기봉과는 또 다른 각도의 북녘 풍경","고인돌·교동도와 동선이 가까움"],
+  t:"맑은 날 가야 멀리까지 잘 보입니다."},
+ {n:"석모도 보문사",r:"k",c:"관광",s:"사찰·낙조",lat:37.709,lng:126.295,q:"석모도 보문사",
+  d:"낙가산 절벽의 눈썹바위 아래 마애관음보살이 새겨진 절로, 우리나라 3대 해상 관음성지로 꼽힙니다.",
+  p:["석모대교 개통으로 차로 바로 이동","계단을 오르면 서해 바다가 한눈에","해 질 녘 낙조가 특히 아름다움"],
+  t:"눈썹바위까지 가파른 계단이 400여 개라 천천히 오르세요."},
+ {n:"석모도 미네랄온천",r:"k",c:"관광",s:"휴식",lat:37.667,lng:126.328,q:"석모도 미네랄온천",
+  d:"바다를 바라보며 몸을 담글 수 있는 노천 온천입니다.",
+  p:["서해 일몰을 보며 즐기는 노천탕","여행 중 피로를 풀기 좋음","보문사와 가까워 한 번에 방문"],
+  t:"주말·일몰 시간대는 대기가 길 수 있습니다."},
+ {n:"교동 대룡시장",r:"k",c:"관광",s:"레트로 골목",lat:37.781,lng:126.279,q:"교동 대룡시장",
+  d:"한국전쟁 때 황해도에서 건너온 피란민들이 만든 골목시장으로, 1960~70년대 풍경이 그대로 남아 있습니다.",
+  p:["옛날 이발소·다방·점방 등 레트로 골목 산책","교동대교로 차로 쉽게 이동","쌍화차, 옛날 과자 등 소소한 먹거리"],
+  t:"교동대교 진입 시 출입 절차가 있을 수 있어 신분증을 챙기세요."},
+ // ===== 맛집 =====
+ {n:"대명항 수산물직판장",r:"g",c:"맛집",s:"회·꽃게",lat:37.641,lng:126.548,q:"대명항 수산물직판장",
+  d:"김포의 대표 어항입니다. 직판장에서 해산물을 고른 뒤 근처 식당에서 바로 회나 찜으로 먹을 수 있습니다. 퇴역 군함을 활용한 함상공원도 있습니다.",
+  p:["갓 잡은 꽃게·새우·회를 저렴하게","초지대교 바로 앞이라 강화 가는 길에 들르기 좋음","식사 후 함상공원 구경은 아이들이 좋아함"],
+  t:"꽃게는 봄(암꽃게)·가을(수꽃게)이 제철입니다."},
+ {n:"강화풍물시장 (만복정)",r:"k",c:"맛집",s:"밴댕이",lat:37.742,lng:126.491,q:"강화풍물시장 만복정",
+  d:"강화 특산물이 모두 모이는 시장입니다. 2층 식당가의 만복정은 밴댕이회·밴댕이무침으로 블루리본에 여러 번 선정되고 방송에도 소개된 곳입니다.",
+  p:["강화 대표 별미 밴댕이를 제대로 맛볼 수 있음","1층에서 순무김치·인삼·화문석 구경과 장보기","2일·7일엔 오일장도 열려 더 활기참"],
+  t:"밴댕이는 5~6월이 제철입니다. 매달 1·3째 월요일은 휴무일 수 있어요."},
+ {n:"일억조식당",r:"k",c:"맛집",s:"젓국갈비",lat:37.746,lng:126.486,q:"강화 일억조식당",
+  d:"강화 향토음식 젓국갈비로 알려진 강화읍의 식당입니다. 젓국갈비는 돼지갈비와 두부를 넣고 강화 새우젓으로 간을 한 맑은 탕입니다.",
+  p:["강화에서만 맛볼 수 있는 향토 음식","새우젓 덕분에 국물이 시원하고 담백함","풍물시장·조양방직과 가까워 동선이 좋음"],
+  t:"골목이 좁아 근처 공영주차장에 세우고 걸어가는 게 편합니다."},
+ {n:"더리미 장어마을",r:"k",c:"맛집",s:"장어구이",lat:37.700,lng:126.519,q:"더리미 장어마을",
+  d:"강화대교 남쪽 해안도로를 따라 장어구이집이 모여 있는 장어 거리입니다.",
+  p:["여러 집이 모여 있어 골라 가는 재미","염하 바다를 보며 먹는 식당이 많음","광성보·초지진 가는 길목"],
+  t:"가게마다 가격과 곁들임이 달라 비교해 보고 들어가세요."},
+ {n:"선수포구 밴댕이마을",r:"k",c:"맛집",s:"밴댕이·회",lat:37.593,lng:126.396,q:"선수포구 밴댕이마을",
+  d:"강화 남쪽 화도면의 작은 포구로, 밴댕이 전문 식당들이 모여 있습니다.",
+  p:["포구 바로 앞에서 먹는 싱싱한 밴댕이","풍물시장보다 한적한 분위기","동막해변·마니산 여행과 묶기 좋음"],
+  t:"5월 밴댕이 철에는 주말 점심이 붐빕니다."},
+ // ===== 카페 =====
+ {n:"스타벅스 애기봉생태공원점",r:"g",c:"카페",s:"북한뷰",lat:37.760,lng:126.603,q:"스타벅스 김포애기봉생태공원점",
+  d:"애기봉 조강전망대 안에 있는 스타벅스로, 약 1.4km 떨어진 북한 땅을 바라보며 커피를 마실 수 있습니다.",
+  p:["세계적으로도 드문 '북한이 보이는 스타벅스'","전망대·생태공원 관람과 한 번에","한정 기념 머그 등 굿즈"],
+  t:"카페만 따로 예약은 없고, 애기봉 공원 입장 예약이 먼저 필요합니다. 창가 자리는 오전이 여유롭습니다."},
+ {n:"조양방직",r:"k",c:"카페",s:"레트로",lat:37.748,lng:126.482,q:"조양방직",
+  d:"일제강점기에 세워진 방직공장을 그대로 살려 만든 대형 카페 겸 갤러리입니다.",
+  p:["옛 공장 건물과 골동품으로 가득한 레트로 분위기","사진 찍기 좋은 곳이 많음","강화읍 구도심·풍물시장과 걸어서 이동"],
+  t:"주말 오후엔 붐비니 오전이나 평일이 여유롭습니다."},
+ {n:"토크라피",r:"k",c:"카페",s:"오션뷰",lat:37.591,lng:126.465,q:"강화 토크라피",
+  d:"동막해변 바로 앞, 흰 건물에 빨간 지붕이 이국적인 오션뷰 카페입니다.",
+  p:["눈앞에 서해 바다가 펼쳐지는 전망","크로크무슈·티라미수 등 디저트가 인기","동막해변 산책과 일몰 감상 후 들르기 좋음"],
+  t:"물때에 따라 바다 대신 갯벌이 보일 수 있습니다."},
+ {n:"아이나카페",r:"k",c:"카페",s:"오션뷰·브런치",lat:37.645,lng:126.520,q:"강화 아이나카페",
+  d:"길상면 해안동로에 있는 약 400평 규모의 유럽풍 대형 오션뷰 카페로, 브런치와 베이커리가 강점입니다.",
+  p:["1·2층과 야외 테라스까지 넓어 자리 걱정이 적음","브런치로 식사까지 해결 가능","반려동물 동반 가능"],
+  t:"평일엔 브레이크타임이 있을 수 있으니 확인하세요."},
+ // ===== 리뷰 평가 좋은 곳 (추가) =====
+ {h:1,n:"금문도",r:"k",c:"맛집",s:"중식",lat:37.656,lng:126.493,q:"금문도 강화",
+  d:"강화 순무·속노랑고구마 같은 강화 식재료로 만든 중식당으로, 강화에서 손꼽히는 인기 맛집입니다.",
+  p:["순무 탕수육, 고구마 간짜장처럼 여기서만 먹는 메뉴","흰짬뽕이 대표 메뉴로 평이 좋음","주차장이 넓음"],
+  t:"점심 위주(오후 2시 반경 마감)로 운영하고 월요일은 쉬는 편이에요. 네이버 예약을 하고 가면 대기가 줄어듭니다."},
+ {h:1,n:"꼬막한상",r:"k",c:"맛집",s:"꼬막비빔밥",lat:37.608,lng:126.517,q:"꼬막한상 강화",
+  d:"동막해변 가는 해안남로에 있는 꼬막 요리 전문점입니다.",
+  p:["통통한 꼬막을 직접 비벼 먹는 꼬막비빔밥","시원한 국물 요리도 함께 호평","서빙 로봇이 있어 아이들이 좋아함"],
+  t:"화요일은 쉬는 경우가 많으니 확인하세요."},
+ {h:1,n:"수라전통육개장 본점",r:"k",c:"맛집",s:"육개장",lat:37.745,lng:126.485,q:"수라전통육개장 강화",
+  d:"강화읍 구도심에 있는 전통 방식 육개장 집으로, 리뷰 수와 평가가 모두 높은 곳입니다.",
+  p:["맵기가 과하지 않아 누구나 먹기 편함","풍물시장·조양방직과 걸어서 가까움","아침부터 저녁까지 운영해 시간 맞추기 쉬움"],
+  t:"든든한 한 끼가 필요할 때 좋은 선택입니다."},
+ {h:1,n:"강화도 꽃게향",r:"k",c:"맛집",s:"꽃게탕·게장",lat:37.704,lng:126.384,q:"강화도 꽃게향",
+  d:"석모대교 입구 외포리에 있는 꽃게 요리 전문점입니다.",
+  p:["시원한 꽃게탕과 간장게장이 대표 메뉴","강화 특색 반찬이 함께 나옴","석모도(보문사·온천) 가는 길에 들르기 좋음"],
+  t:"화요일은 쉬는 경우가 많아요. 게 요리는 시세에 따라 가격이 달라집니다."},
+ {h:1,n:"쌈밥이네",r:"k",c:"맛집",s:"쌈밥·솥밥",lat:37.635,lng:126.374,q:"쌈밥이네 강화",
+  d:"화도면 해안남로의 쌈밥 정식집으로, 제육볶음과 솥밥을 쌈채소에 싸 먹는 한 상입니다.",
+  p:["쌈채소를 마음껏 리필","짜지 않은 된장과 갓 지은 솥밥","서쪽 해안도로 드라이브 중 식사하기 좋음"],
+  t:"주말 점심은 붐비니 조금 일찍 가세요."},
+ {h:1,n:"참두부나라",r:"g",c:"맛집",s:"손두부",lat:37.698,lng:126.584,q:"참두부나라 김포",
+  d:"김포 통진읍에 있는 손두부 전문 식당입니다.",
+  p:["직접 만든 고소한 두부를 기본으로 내줌","순두부·제육·황태구이 등 메뉴가 고르게 호평","식사 후 나오는 식혜가 인기"],
+  t:"애기봉·문수산성에 들렀다 강화로 넘어가기 전 식사 장소로 좋습니다."},
+ {h:1,n:"우트우트",r:"k",c:"카페",s:"베이커리",lat:37.642,lng:126.491,q:"우트우트 강화",
+  d:"전등사 근처 온수리에 있는 베이커리 카페로, 커피와 빵 모두 평이 좋습니다.",
+  p:["소금빵·케이크 등 빵 종류가 다양하고 맛있다는 평","창밖으로 온수리 성공회성당 풍경","1~3층까지 좌석이 넉넉하고 주차장이 넓음"],
+  t:"인기 빵은 오후에 떨어지니 이른 시간이 좋습니다."},
+ {h:1,n:"프란쓰",r:"k",c:"카페",s:"한옥 찻집",lat:37.724,lng:126.509,q:"프란쓰 강화",
+  d:"선원면 더리미 근처의 한옥과 정원을 살린 찻집입니다.",
+  p:["직접 블렌딩한 차가 특히 기억에 남는다는 평","동화 같은 한옥 정원 분위기","더리미 장어마을과 가까움"],
+  t:"수요일은 쉬는 경우가 많고 평일은 오후 6시쯤 닫아요."},
+ {h:1,n:"한옥카페 드리우니",r:"k",c:"카페",s:"한옥",lat:37.640,lng:126.481,q:"드리우니 강화",
+  d:"온수리에 있는 넓은 한옥 카페로, 앞마당 잔디가 예쁩니다.",
+  p:["한옥 마당에서 사진 찍기 좋음","팥빙수·앙버터 모나카 같은 전통 디저트","주차장이 넓고 전등사와 가까움"],
+  t:"여름엔 팥빙수를 추천하는 후기가 많습니다."},
+ {h:1,n:"멍때림 카페",r:"k",c:"카페",s:"전망·힐링",lat:37.607,lng:126.410,q:"강화 멍때림 카페",
+  d:"마니산 자락 언덕 위에서 탁 트인 풍경을 보며 쉬어 가는 카페입니다.",
+  p:["이름처럼 조용히 멍하니 쉬기 좋은 분위기","마니산과 먼 바다가 한눈에","좌석이 여러 곳에 흩어져 있어 한적함"],
+  t:"올라가는 길이 1차선이라 주말엔 천천히 운전하세요."},
+ {h:1,n:"상두그레이",r:"g",c:"카페",s:"스페셜티 커피",lat:37.631,lng:126.640,q:"상두그레이 김포",
+  d:"김포 양촌에 있는 스페셜티 커피 카페로, 커피 맛으로 특히 평가가 높습니다.",
+  p:["원두를 골라 마시는 핸드드립 커피","넓고 세련된 실내, 앞쪽의 자연 풍경","빵 종류도 다양함"],
+  t:"커피를 좋아한다면 김포에서 꼭 들러볼 만한 곳입니다."},
+ {h:1,n:"55갤런",r:"g",c:"카페",s:"대형·아트",lat:37.6625,lng:126.6575,q:"55갤런 김포",
+  d:"김포대로변의 3층 대형 카페로, 재활용 예술 작품과 식물로 채워진 갤러리 같은 공간입니다.",
+  p:["볼거리가 많아 구경하는 재미","넓어서 자리 걱정이 적음","베이커리·디저트도 호평"],
+  t:"서울에서 강화 가는 길 초입이라 첫 휴식 장소로 좋습니다."}
+];
+
+const REG = {all:"전체",g:"김포",k:"강화"};
+const CATS = ["전체","관광","맛집","카페"];
+const CK = {"관광":"t","맛집":"f","카페":"c"};
+const CV = {t:"tour",f:"food",c:"cafe"};
+let fr="all", fc="전체", q="", active=-1, onlyHot=false, onlyMine=false;
+let MY={};
+let nmap=null, nmarks=[];
+
+const norm = s => s.toLowerCase().replace(/\s+/g,"");
+const text = p => norm([p.n,p.s,p.d,p.t,REG[p.r],p.c,...p.p].join(" "));
+const visible = p => (!onlyMine||MY[p.n]) && (!onlyHot||p.h) && (fr==="all"||p.r===fr) && (fc==="전체"||p.c===fc) && (!q || text(p).includes(norm(q)));
+const naverUrl = s => "https://map.naver.com/p/search/"+encodeURIComponent(s);
+const esc = s => s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const hl = s => { if(!q.trim()) return esc(s);
+  const re=new RegExp("("+q.trim().replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+")","gi");
+  return esc(s).replace(re,"<mark>$1</mark>"); };
+
+/* ---------- 지도 ---------- */
+const L0=126.18, L1=126.77, T=37.83, B=37.575, K=1000, Y=1.26;
+const px=(lng,lat)=>[+((lng-L0)*K).toFixed(1), +((T-lat)*K*Y).toFixed(1)];
+const W=Math.round((L1-L0)*K), H=Math.round((T-B)*K*Y);
+const poly=pts=>pts.map(([a,b])=>px(a,b).join(",")).join(" ");
+const shapes={
+  gh:[[126.40,37.80],[126.47,37.80],[126.515,37.775],[126.522,37.72],[126.521,37.66],[126.523,37.63],[126.51,37.60],[126.48,37.585],[126.42,37.59],[126.38,37.62],[126.37,37.68],[126.36,37.74],[126.38,37.78]],
+  sm:[[126.27,37.73],[126.33,37.72],[126.35,37.68],[126.34,37.645],[126.30,37.655],[126.265,37.70]],
+  gd:[[126.20,37.80],[126.27,37.81],[126.31,37.795],[126.30,37.76],[126.24,37.755],[126.20,37.77]],
+  gp:[[126.535,37.72],[126.56,37.745],[126.60,37.775],[126.66,37.775],[126.72,37.71],[126.77,37.67],[126.77,37.575],[126.60,37.575],[126.54,37.615],[126.527,37.65],[126.53,37.69]],
+  nk:[[126.18,37.83],[126.77,37.83],[126.77,37.80],[126.66,37.795],[126.60,37.805],[126.52,37.815],[126.18,37.822]]
+};
+function drawMap(){
+  const lab=(t,lng,lat,cls)=>{const[x,y]=px(lng,lat);return `<text x="${x}" y="${y}" class="${cls}" text-anchor="middle">${t}</text>`};
+  let s=`<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="김포와 강화 여행지 위치 개략도">
+  <rect x="-2000" y="-2000" width="5000" height="5000" class="water"/>
+  <polygon points="${poly(shapes.nk)}" class="land" style="opacity:.6"/>
+  <polygon points="${poly(shapes.gp)}" class="land"/><polygon points="${poly(shapes.gh)}" class="land"/>
+  <polygon points="${poly(shapes.sm)}" class="land"/><polygon points="${poly(shapes.gd)}" class="land"/>
+  ${lab("북한",126.40,37.826,"rlabel")}${lab("강화도",126.44,37.70,"rlabel")}${lab("석모도",126.31,37.692,"rlabel")}
+  ${lab("교동도",126.25,37.772,"rlabel")}${lab("김포",126.68,37.66,"rlabel")}${lab("한강 하구",126.62,37.793,"wlabel")}${lab("서해",126.28,37.61,"wlabel")}`;
+  P.forEach((p,i)=>{const[x,y]=px(p.lng,p.lat);
+    s+=`<circle class="dot ${CK[p.c]}${p.h?" h":""}" data-i="${i}" cx="${x}" cy="${y}" r="7" tabindex="0" role="button" aria-label="${p.n}"><title>${p.n}</title></circle>`;});
+  s+=`<text id="dlabel" class="dlabel"></text></svg>`;
+  document.getElementById("map").innerHTML=s;
+  document.querySelectorAll(".dot").forEach(d=>{
+    const i=+d.dataset.i;
+    d.addEventListener("click",()=>select(i,true));
+    d.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();select(i,true)}});
+    d.addEventListener("mouseenter",()=>label(i));
+    d.addEventListener("mouseleave",()=>label(active));
+  });
+}
+function label(i){
+  const lb=document.getElementById("dlabel");
+  if(nmap){nmRefresh();return}
+  if(!lb)return;
+  if(i<0){lb.textContent="";return}
+  const p=P[i],[x,y]=px(p.lng,p.lat),right=x<W*0.62;
+  lb.setAttribute("x",right?x+13:x-13); lb.setAttribute("y",y+4);
+  lb.setAttribute("text-anchor",right?"start":"end"); lb.textContent=p.n.replace(/ \(.+\)/,"");
+}
+function select(i,scroll){
+  active=i;
+  document.querySelectorAll(".dot").forEach(d=>d.classList.toggle("on",+d.dataset.i===i));
+  document.querySelectorAll(".place").forEach(el=>el.classList.toggle("on",el.id==="p"+i));
+  label(i);
+  if(nmap&&i>=0&&!scroll){nmap.panTo(new naver.maps.LatLng(P[i].lat,P[i].lng))}
+  if(scroll){
+    const el=document.getElementById("p"+i); if(!el) return;
+    const pane=document.getElementById("listPane");
+    const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if(pane.scrollHeight>pane.clientHeight+2){
+      pane.scrollTo({top:el.offsetTop-pane.offsetTop-44,behavior:reduce?"auto":"smooth"});
+    }else{
+      const mapH=matchMedia("(max-width:760px)").matches?document.querySelector(".mapPane").offsetHeight:0;
+      window.scrollTo({top:el.getBoundingClientRect().top+scrollY-mapH-8,behavior:reduce?"auto":"smooth"});
+    }
+  }
+}
+
+
+/* ---------- 내 평가 ---------- */
+const starStr=n=>"★".repeat(n)+"☆".repeat(5-n);
+function mineHTML(p,i){
+  const m=MY[p.n];
+  const view = m && m.comment ? `<p class="mycomment"><b>${starStr(m.stars||0)}</b>${esc(m.comment)}</p>` : "";
+  const sum = m ? `<span>내 평가</span><span class="sumstars">${starStr(m.stars||0)}</span><span class="sumdate">${m.date||""} 방문</span>`
+                : `<span>내 평가 남기기</span>`;
+  return `${view}<details class="mine" data-i="${i}">
+    <summary>${sum}</summary>
+    <div class="mbody">
+      <div class="stars" role="radiogroup" aria-label="별점">${[1,2,3,4,5].map(n=>`<button type="button" role="radio" aria-checked="${(m&&m.stars)===n}" aria-label="${n}점" data-n="${n}" class="${m&&m.stars>=n?"on":""}">★</button>`).join("")}</div>
+      <textarea placeholder="직접 가본 소감을 남겨 보세요 (예: 주차 편함, 흰짬뽕 강추)" maxlength="500">${m?esc(m.comment||""):""}</textarea>
+      <div class="mrow"><button type="button" class="save">저장</button><span class="msg" aria-live="polite"></span>${m?'<button type="button" class="del">기록 지우기</button>':""}</div>
+    </div></details>`;
+}
+function wireMine(box){
+  box.querySelectorAll(".mine").forEach(d=>{
+    const p=P[+d.dataset.i]; let pick=(MY[p.n]&&MY[p.n].stars)||0;
+    d.addEventListener("click",e=>e.stopPropagation());
+    const btns=d.querySelectorAll(".stars button");
+    btns.forEach(b=>b.addEventListener("click",()=>{pick=+b.dataset.n;
+      btns.forEach(x=>{x.classList.toggle("on",+x.dataset.n<=pick);x.setAttribute("aria-checked",+x.dataset.n===pick)});}));
+    const msg=d.querySelector(".msg");
+    d.querySelector(".save").addEventListener("click",async()=>{
+      const comment=d.querySelector("textarea").value.trim();
+      if(!pick){msg.textContent="별점을 먼저 골라 주세요.";return}
+      const t=new Date(),date=`${t.getFullYear()}.${String(t.getMonth()+1).padStart(2,"0")}.${String(t.getDate()).padStart(2,"0")}`;
+      const next={...MY,[p.n]:{stars:pick,comment,date}};
+      msg.textContent="저장 중…";
+      const ok=await persist(next);
+      msg.textContent=ok?"저장했습니다":"저장하지 못했습니다. 잠시 후 다시 시도해 주세요.";
+      if(ok) setTimeout(()=>{render();const el=document.querySelector(`#p${d.dataset.i} .mine`);if(el)el.open=false;},700);
+    });
+    const del=d.querySelector(".del");
+    if(del) del.addEventListener("click",async()=>{
+      if(!confirm(`'${p.n}'의 내 기록을 지울까요?`))return;
+      const next={...MY}; delete next[p.n];
+      if(await persist(next)) render(); else msg.textContent="지우지 못했습니다.";
+    });
+  });
+}
+
+/* 저장소: 계정(db) 우선, 안 되면 이 기기(localStorage) */
+const LK="gg-map-reviews";
+let dbRef=null, writing=Promise.resolve();
+function loadLocal(){try{return JSON.parse(localStorage.getItem(LK)||"{}")||{}}catch(e){return {}}}
+function saveLocal(o){try{localStorage.setItem(LK,JSON.stringify(o))}catch(e){}}
+async function persist(next){
+  MY=next; saveLocal(next);
+  if(!dbRef) return true;
+  const job=writing.then(()=>dbRef.set({items:next,updatedAt:Date.now()}));
+  writing=job.catch(()=>{});
+  try{await job;return true}catch(e){return false}
+}
+function note(t){const n=document.getElementById("storeNote");if(n)n.textContent=t}
+async function initStore(){
+  MY=loadLocal(); render();
+  note("내 기록은 이 기기에 저장됩니다");
+  try{
+    if(!window.claude||!window.claude.use) return;
+    const db=await window.claude.use("db"), user=await window.claude.use("user");
+    const uid=user?await user.id():null;
+    if(!db||!uid) return;
+    dbRef=db.doc(`data/users/${uid}/reviews`);
+    let first=true;
+    dbRef.onSnapshot(snap=>{
+      const remote=snap.exists?(snap.data().items||{}):null;
+      if(first){first=false;
+        if(!remote && Object.keys(MY).length){persist(MY)} // 기기 기록을 계정으로 옮김
+      }
+      if(remote){MY={...remote};saveLocal(MY)}
+      note("내 기록은 내 계정에만 저장됩니다 (다른 기기에서도 보여요)");
+      const typing=document.activeElement&&document.activeElement.closest&&document.activeElement.closest(".mine");
+      if(!typing) render();
+    },()=>{dbRef=null;note("내 기록은 이 기기에 저장됩니다")});
+  }catch(e){dbRef=null}
+}
+
+/* ---------- 리스트 ---------- */
+const pin=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>`;
+function render(){
+  const list=P.map((p,i)=>({p,i})).filter(o=>visible(o.p));
+  const box=document.getElementById("places");
+  box.innerHTML=list.map(({p,i})=>`
+    <article class="place ${CK[p.c]}${i===active?" on":""}" id="p${i}" data-i="${i}">
+      <h3>${hl(p.n)}${p.h?'<span class="badge">★ 평가 좋은 곳</span>':""}</h3>
+      <div class="meta"><b>${p.c}</b>&nbsp;&nbsp;${REG[p.r]}&nbsp;&nbsp;${hl(p.s)}</div>
+      <p>${hl(p.d)}</p>
+      <ul class="pros">${p.p.map(x=>`<li>${hl(x)}</li>`).join("")}</ul>
+      <p class="tip"><strong>팁</strong>&nbsp; ${hl(p.t)}</p>
+      <a class="navbtn" href="${naverUrl(p.q)}" target="_blank" rel="noopener">${pin}네이버지도에서 열기</a>
+      ${mineHTML(p,i)}
+    </article>`).join("")
+    || `<div class="empty">${onlyMine&&!Object.keys(MY).length?'아직 남긴 기록이 없습니다. 장소 카드의 "내 평가 남기기"를 눌러 첫 기록을 남겨 보세요.':'조건에 맞는 장소가 없습니다.'} 검색어를 바꾸거나 필터를 전체로 돌려 보세요.<br><button type="button" id="reset">검색·필터 초기화</button></div>`;
+  const parts=[onlyMine?"내가 가본 곳":"",onlyHot?"평가 좋은 곳":"",fc!=="전체"?fc:"",fr!=="all"?REG[fr]:"",q?`'${q}' 검색`:""].filter(Boolean).join(", ");
+  document.getElementById("count").textContent=`${parts?parts+" 결과 ":"전체 "}${list.length}곳`;
+  document.querySelectorAll(".dot").forEach(d=>{const p=P[+d.dataset.i];d.classList.toggle("dim",!visible(p));d.classList.toggle("v",!!MY[p.n]);});
+  wireMine(box);
+  if(nmap) nmRefresh();
+  document.getElementById("courses").style.display=(q||onlyMine||onlyHot||fc!=="전체"||fr!=="all")?"none":"";
+  box.querySelectorAll(".place").forEach(el=>{
+    el.addEventListener("click",e=>{if(e.target.closest("a"))return;select(+el.dataset.i,false)});
+    el.addEventListener("mouseenter",()=>label(+el.dataset.i));
+    el.addEventListener("mouseleave",()=>label(active));
+  });
+  const r=document.getElementById("reset");
+  if(r) r.onclick=()=>{q="";fr="all";fc="전체";onlyHot=false;onlyMine=false;hb.setAttribute("aria-pressed","false");document.getElementById("mineBtn").setAttribute("aria-pressed","false");document.getElementById("q").value="";syncSearch();syncChips();render();};
+}
+function chips(id,items,get,set){
+  const box=document.getElementById(id);
+  box.innerHTML=items.map(([v,t])=>`<button type="button" class="chip" data-v="${v}" aria-pressed="${v===get()}">${t}</button>`).join("");
+  box.addEventListener("click",e=>{const b=e.target.closest(".chip");if(!b)return;set(b.dataset.v);syncChips();render();});
+  box._get=get;
+}
+function syncChips(){["catF","regionF"].forEach(id=>{const b=document.getElementById(id);
+  b.querySelectorAll(".chip").forEach(c=>c.setAttribute("aria-pressed",c.dataset.v===b._get()))});}
+function syncSearch(){document.getElementById("searchBox").classList.toggle("has",!!q);}
+
+drawMap();
+chips("catF",CATS.map(c=>[c,CK[c]?`<span class="sw" style="background:var(--${CV[CK[c]]})"></span>${c}`:c]),()=>fc,v=>fc=v);
+chips("regionF",Object.entries(REG),()=>fr,v=>fr=v);
+const hb=document.getElementById("hotBtn");
+hb.addEventListener("click",()=>{onlyHot=!onlyHot;hb.setAttribute("aria-pressed",onlyHot);render();});
+const mb=document.getElementById("mineBtn");
+mb.addEventListener("click",()=>{onlyMine=!onlyMine;mb.setAttribute("aria-pressed",onlyMine);render();});
+const qi=document.getElementById("q");
+qi.addEventListener("input",()=>{q=qi.value.trim();syncSearch();render();});
+qi.addEventListener("keydown",e=>{if(e.key==="Escape"){qi.value="";q="";syncSearch();render();}});
+document.getElementById("clear").addEventListener("click",e=>{e.preventDefault();qi.value="";q="";syncSearch();render();qi.focus();});
+initStore();
+
+/* ---------- 네이버 지도 (GitHub Pages 등 등록한 주소에서만 작동) ---------- */
+const NAVER_KEY="Jeqkna0qic";
+function nmIcon(i){
+  const p=P[i], on=i===active;
+  const cls=`nm ${CK[p.c]}${p.h?" h":""}${MY[p.n]?" v":""}${on?" on":""}`;
+  const lab=on?`<div class="nmlabel">${esc(p.n.replace(/ \(.+\)/,""))}</div>`:"";
+  const sz=on?22:16;
+  return {content:`<div class="nmwrap"><div class="${cls}"></div>${lab}</div>`,anchor:new naver.maps.Point(sz/2,sz/2)};
+}
+function nmRefresh(){
+  nmarks.forEach((m,i)=>{
+    const show=visible(P[i]);
+    if(show&&!m.getMap()) m.setMap(nmap);
+    if(!show&&m.getMap()) m.setMap(null);
+    m.setIcon(nmIcon(i)); m.setZIndex(i===active?1000:(P[i].h?50:10));
+  });
+}
+window.initNaverMap=function(){
+  try{
+    const box=document.getElementById("map");
+    box.innerHTML='<div id="nmap"></div>';
+    const b=new naver.maps.LatLngBounds();
+    P.forEach(p=>b.extend(new naver.maps.LatLng(p.lat,p.lng)));
+    nmap=new naver.maps.Map("nmap",{bounds:b,zoomControl:true,zoomControlOptions:{position:naver.maps.Position.TOP_RIGHT},mapDataControl:false,scaleControl:false});
+    nmarks=P.map((p,i)=>{
+      const m=new naver.maps.Marker({position:new naver.maps.LatLng(p.lat,p.lng),map:nmap,title:p.n,icon:nmIcon(i)});
+      naver.maps.Event.addListener(m,"click",()=>select(i,true));
+      return m;
+    });
+    nmRefresh();
+    const note=document.querySelector(".mapnote span");
+    if(note&&note.firstChild) note.firstChild.textContent="네이버 지도 · 마커를 누르면 오른쪽 목록에서 찾아 줍니다";
+  }catch(e){console.warn("naver init fail",e);nmFallback()}
+};
+function nmFallback(){ if(nmap){nmap=null;nmarks=[]} drawMap(); render(); }
+window.navermap_authFailure=function(){ nmFallback(); };
+(function loadNaver(){
+  if(location.protocol==="file:") return;            // 파일로 열면 등록 주소가 없어 인증 불가
+  const sc=document.createElement("script");
+  sc.src=`https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=${NAVER_KEY}&callback=initNaverMap`;
+  sc.onerror=()=>{};                                   // 불러오지 못하면 그린 지도 유지
+  document.head.appendChild(sc);
+})();
+</script>
+</body>
+</html>
