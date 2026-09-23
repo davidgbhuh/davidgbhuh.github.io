@@ -14,17 +14,17 @@
   padding-bottom:env(safe-area-inset-bottom,0px);
   --bg:#EDF0EC;--paper:#F8FAF7;--ink:#1E2A2E;--muted:#5A6A6C;--line:#CBD3CE;
   --sea:#2F6F7E;--land:#DCE3D5;--focus:#2F6F7E;
-  --tour:#2F6F7E;--food:#B8412F;--cafe:#7A5230;
+  --tour:#2F63A8;--food:#B8412F;--cafe:#2E9E4F;
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
     --bg:#131B1E;--paper:#1B2528;--ink:#E7ECEA;--muted:#9AA9AA;--line:#2E3B3F;
-    --sea:#6FB3C2;--land:#26322F;--focus:#6FB3C2;--tour:#6FB3C2;--food:#E07A62;--cafe:#C99A6E;
+    --sea:#6FB3C2;--land:#26322F;--focus:#6FB3C2;--tour:#7FA8E0;--food:#E07A62;--cafe:#5CCB7A;
   }
 }
 :root[data-theme="dark"]{
   --bg:#131B1E;--paper:#1B2528;--ink:#E7ECEA;--muted:#9AA9AA;--line:#2E3B3F;
-  --sea:#6FB3C2;--land:#26322F;--focus:#6FB3C2;--tour:#6FB3C2;--food:#E07A62;--cafe:#C99A6E;
+  --sea:#6FB3C2;--land:#26322F;--focus:#6FB3C2;--tour:#7FA8E0;--food:#E07A62;--cafe:#5CCB7A;
 }
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 *,*::before,*::after{box-sizing:inherit}
@@ -77,7 +77,7 @@ h1{font-family:"Gowun Batang",serif;font-size:1.45rem;margin:0;white-space:nowra
 .place::before{content:"";position:absolute;left:0;top:18px;bottom:20px;width:4px;border-radius:2px}
 .place.t::before{background:var(--tour)} .place.f::before{background:var(--food)} .place.c::before{background:var(--cafe)}
 .place.on{background:color-mix(in srgb,var(--sea) 9%,transparent);border-radius:10px}
-.badge.kid{background:#2F8F5B}
+.badge.kid{background:#7A4C8C}
 .badge{display:inline-block;font-family:"IBM Plex Sans KR",sans-serif;font-size:.72rem;font-weight:600;color:#fff;background:#E0A100;border-radius:6px;padding:1px 7px;margin-left:8px;vertical-align:3px}
 .place h3{font-family:"Gowun Batang",serif;font-size:1.2rem;margin:0 0 1px}
 .meta{font-size:.8rem;color:var(--muted);margin-bottom:8px}
@@ -129,7 +129,7 @@ mark{background:color-mix(in srgb,#F2C94C 55%,transparent);color:inherit;border-
 #nmap{position:absolute;top:0;left:0;right:0;bottom:0;width:100%;height:100%}
 #nmap img{max-width:none!important}
 .nm{width:16px;height:16px;border-radius:50%;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.35);cursor:pointer}
-.nm.t{background:#2F6F7E}.nm.f{background:#B8412F}.nm.c{background:#7A5230}
+.nm.t{background:#2F63A8}.nm.f{background:#B8412F}.nm.c{background:#2E9E4F}
 .nm.h{border-color:#E0A100;border-width:3px}
 .nm.v{outline:3px solid #1E2A2E;outline-offset:0}
 .nm.on{width:22px;height:22px}
@@ -188,7 +188,7 @@ mark{background:color-mix(in srgb,#F2C94C 55%,transparent);color:inherit;border-
   <polygon points="90,126 150,138.6 170,189 160,233.1 120,220.5 85,163.8" class="land"></polygon><polygon points="20,37.8 90,25.2 130,44.1 120,88.2 60,94.5 20,75.6" class="land"></polygon>
   <text x="220" y="5" class="rlabel" text-anchor="middle">북한</text><text x="260" y="163.8" class="rlabel" text-anchor="middle">강화도</text><text x="130" y="173.9" class="rlabel" text-anchor="middle">석모도</text>
   <text x="70" y="73.1" class="rlabel" text-anchor="middle">교동도</text><text x="500" y="214.2" class="rlabel" text-anchor="middle">김포</text><text x="440" y="46.6" class="wlabel" text-anchor="middle">한강 하구</text><text x="100" y="277.2" class="wlabel" text-anchor="middle">서해</text><circle class="dot t" data-i="0" cx="413" cy="94.5" r="7" tabindex="0" role="button" aria-label="애기봉평화생태공원"><title>애기봉평화생태공원</title></circle><circle class="dot t" data-i="1" cx="366" cy="153.7" r="7" tabindex="0" role="button" aria-label="문수산성"><title>문수산성</title></circle><circle class="dot t" data-i="2" cx="351" cy="224.3" r="7" tabindex="0" role="button" aria-label="덕포진"><title>덕포진</title></circle><circle class="dot t" data-i="3" cx="526" cy="263.3" r="7" tabindex="0" role="button" aria-label="김포 장릉"><title>김포 장릉</title></circle><circle class="dot t" data-i="4" cx="448" cy="233.1" r="7" tabindex="0" role="button" aria-label="라베니체 (구래동 수변거리)"><title>라베니체 (구래동 수변거리)</title></circle><circle class="dot t" data-i="5" cx="337" cy="257" r="7" tabindex="0" role="button" aria-label="초지진"><title>초지진</title></circle><circle class="dot t" data-i="6" cx="335" cy="200.3" r="7" tabindex="0" role="button" aria-label="광성보"><title>광성보</title></circle><circle class="dot t" data-i="7" cx="311" cy="255.8" r="7" tabindex="0" role="button" aria-label="전등사"><title>전등사</title></circle><circle class="dot t" data-i="8" cx="253" cy="272.2" r="7" tabindex="0" role="button" aria-label="마니산 참성단"><title>마니산 참성단</title></circle><circle class="dot t" data-i="9" cx="275" cy="298.6" r="7" tabindex="0" role="button" aria-label="동막해변"><title>동막해변</title></circle><circle class="dot t" data-i="10" cx="290" cy="283.5" r="7" tabindex="0" role="button" aria-label="강화 루지"><title>강화 루지</title></circle><circle class="dot t" data-i="11" cx="271" cy="73.1" r="7" tabindex="0" role="button" aria-label="강화 고인돌 (부근리 지석묘)"><title>강화 고인돌 (부근리 지석묘)</title></circle><circle class="dot t" data-i="12" cx="221" cy="52.9" r="7" tabindex="0" role="button" aria-label="강화평화전망대"><title>강화평화전망대</title></circle><circle class="dot t" data-i="13" cx="115" cy="152.5" r="7" tabindex="0" role="button" aria-label="석모도 보문사"><title>석모도 보문사</title></circle><circle class="dot t" data-i="14" cx="148" cy="205.4" r="7" tabindex="0" role="button" aria-label="석모도 미네랄온천"><title>석모도 미네랄온천</title></circle><circle class="dot t" data-i="15" cx="99" cy="61.7" r="7" tabindex="0" role="button" aria-label="교동 대룡시장"><title>교동 대룡시장</title></circle><circle class="dot f" data-i="16" cx="368" cy="238.1" r="7" tabindex="0" role="button" aria-label="대명항 수산물직판장"><title>대명항 수산물직판장</title></circle><circle class="dot f" data-i="17" cx="311" cy="110.9" r="7" tabindex="0" role="button" aria-label="강화풍물시장 (만복정)"><title>강화풍물시장 (만복정)</title></circle><circle class="dot f" data-i="18" cx="306" cy="105.8" r="7" tabindex="0" role="button" aria-label="일억조식당"><title>일억조식당</title></circle><circle class="dot f" data-i="19" cx="339" cy="163.8" r="7" tabindex="0" role="button" aria-label="더리미 장어마을"><title>더리미 장어마을</title></circle><circle class="dot f" data-i="20" cx="216" cy="298.6" r="7" tabindex="0" role="button" aria-label="선수포구 밴댕이마을"><title>선수포구 밴댕이마을</title></circle><circle class="dot c" data-i="21" cx="423" cy="88.2" r="7" tabindex="0" role="button" aria-label="스타벅스 애기봉생태공원점"><title>스타벅스 애기봉생태공원점</title></circle><circle class="dot c" data-i="22" cx="302" cy="103.3" r="7" tabindex="0" role="button" aria-label="조양방직"><title>조양방직</title></circle><circle class="dot c" data-i="23" cx="285" cy="301.1" r="7" tabindex="0" role="button" aria-label="토크라피"><title>토크라피</title></circle><circle class="dot c" data-i="24" cx="340" cy="233.1" r="7" tabindex="0" role="button" aria-label="아이나카페"><title>아이나카페</title></circle><circle class="dot f h" data-i="25" cx="313" cy="219.2" r="7" tabindex="0" role="button" aria-label="금문도"><title>금문도</title></circle><circle class="dot f h" data-i="26" cx="337" cy="279.7" r="7" tabindex="0" role="button" aria-label="꼬막한상"><title>꼬막한상</title></circle><circle class="dot f h" data-i="27" cx="305" cy="107.1" r="7" tabindex="0" role="button" aria-label="수라전통육개장 본점"><title>수라전통육개장 본점</title></circle><circle class="dot f h" data-i="28" cx="204" cy="158.8" r="7" tabindex="0" role="button" aria-label="강화도 꽃게향"><title>강화도 꽃게향</title></circle><circle class="dot f h" data-i="29" cx="194" cy="245.7" r="7" tabindex="0" role="button" aria-label="쌈밥이네"><title>쌈밥이네</title></circle><circle class="dot f h" data-i="30" cx="404" cy="166.3" r="7" tabindex="0" role="button" aria-label="참두부나라"><title>참두부나라</title></circle><circle class="dot c h" data-i="31" cx="311" cy="236.9" r="7" tabindex="0" role="button" aria-label="우트우트"><title>우트우트</title></circle><circle class="dot c h" data-i="32" cx="329" cy="133.6" r="7" tabindex="0" role="button" aria-label="프란쓰"><title>프란쓰</title></circle><circle class="dot c h" data-i="33" cx="301" cy="239.4" r="7" tabindex="0" role="button" aria-label="한옥카페 드리우니"><title>한옥카페 드리우니</title></circle><circle class="dot c h" data-i="34" cx="230" cy="281" r="7" tabindex="0" role="button" aria-label="멍때림 카페"><title>멍때림 카페</title></circle><circle class="dot c h" data-i="35" cx="460" cy="250.7" r="7" tabindex="0" role="button" aria-label="상두그레이"><title>상두그레이</title></circle><circle class="dot c h" data-i="36" cx="477.5" cy="211" r="7" tabindex="0" role="button" aria-label="55갤런"><title>55갤런</title></circle><circle class="dot t" data-i="37" cx="307.5" cy="196.6" r="7" tabindex="0" role="button" aria-label="옥토끼우주센터"><title>옥토끼우주센터</title></circle><circle class="dot t" data-i="38" cx="254.8" cy="69.8" r="7" tabindex="0" role="button" aria-label="강화자연사박물관"><title>강화자연사박물관</title></circle><circle class="dot t" data-i="39" cx="358.8" cy="225.9" r="7" tabindex="0" role="button" aria-label="덕포진 교육박물관"><title>덕포진 교육박물관</title></circle><circle class="dot t" data-i="40" cx="450.5" cy="131.8" r="7" tabindex="0" role="button" aria-label="태산패밀리파크"><title>태산패밀리파크</title></circle><circle class="dot t" data-i="41" cx="202.7" cy="278.1" r="7" tabindex="0" role="button" aria-label="강화갯벌센터"><title>강화갯벌센터</title></circle><circle class="dot t" data-i="42" cx="336.7" cy="121.6" r="7" tabindex="0" role="button" aria-label="갑곶돈대·강화전쟁박물관"><title>갑곶돈대·강화전쟁박물관</title></circle><text id="dlabel" class="dlabel"></text></svg></div>
-      <div class="mapnote"><span>점을 누르면 오른쪽 목록에서 찾아 줍니다<br><span class="storeNote" id="storeNote"></span><br><span class="storeNote" id="nvStatus">버전 10</span></span><span class="key"><i style="background:var(--tour)"></i>관광<i style="background:var(--food)"></i>맛집<i style="background:var(--cafe)"></i>카페<i style="background:transparent;border:2px solid #E0A100"></i>평가 좋은 곳<i style="background:transparent;border:3px solid var(--ink)"></i>내가 가본 곳</span></div>
+      <div class="mapnote"><span>점을 누르면 오른쪽 목록에서 찾아 줍니다<br><span class="storeNote" id="storeNote"></span><br><span class="storeNote" id="nvStatus">버전 11</span></span><span class="key"><i style="background:var(--tour)"></i>관광<i style="background:var(--food)"></i>맛집<i style="background:var(--cafe)"></i>카페<i style="background:transparent;border:2px solid #E0A100"></i>평가 좋은 곳<i style="background:transparent;border:3px solid var(--ink)"></i>내가 가본 곳</span></div>
     </section>
 
     <section class="listPane" id="listPane" aria-label="장소 목록">
@@ -1349,7 +1349,7 @@ window.initNaverMap=function(){
   }
 };
 function nmFallback(){ if(nmap){nmap=null;nmarks=[]} drawMap(); render(); }
-function nmStatus(t){const n=document.getElementById("nvStatus");if(n)n.textContent="버전 10 · "+t}
+function nmStatus(t){const n=document.getElementById("nvStatus");if(n)n.textContent="버전 11 · "+t}
 let nmParam=(new URLSearchParams(location.search).get("keytype")==="client")?"ncpClientId":"ncpKeyId", nmRetried=false;
 window.navermap_authFailure=function(){
   nmFallback();
