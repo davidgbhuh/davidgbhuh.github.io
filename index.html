@@ -105,6 +105,12 @@ mark{background:color-mix(in srgb,#F2C94C 55%,transparent);color:inherit;border-
 .day{margin-top:12px}
 .day h4{font-size:.92rem;margin:0 0 4px;color:var(--sea)}
 .day li{margin-bottom:2px}
+.day ul{margin:0;padding-left:1.2em}
+.tl{list-style:none;padding-left:0!important}
+.tl li{display:grid;grid-template-columns:3.4em 1fr;gap:4px}
+.tm{font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums}
+.warn{font-size:.87rem;margin:6px 0 4px;padding:8px 12px;border-left:3px solid #E0A100;border-radius:0 8px 8px 0;background:color-mix(in srgb,#E0A100 12%,transparent)}
+.warn strong{font-weight:600}
 .go{font:inherit;font-weight:600;color:var(--ink);background:none;border:0;padding:0;cursor:pointer;
   text-decoration:underline;text-decoration-color:var(--sea);text-decoration-thickness:2px;text-underline-offset:3px}
 .go:hover{color:var(--sea)}
@@ -186,7 +192,7 @@ mark{background:color-mix(in srgb,#F2C94C 55%,transparent);color:inherit;border-
       <button type="button" class="chip" id="kidBtn" aria-pressed="false">👧 아이와 함께</button>
       <button type="button" class="chip" id="hotBtn" aria-pressed="false">★ 평가 좋은 곳만</button>
       <button type="button" class="chip" id="mineBtn" aria-pressed="false">✓ 내가 가본 곳</button>
-      <button type="button" class="chip" id="campBtn">⛺ 캠핑 2박3일 코스</button>
+      <button type="button" class="chip" id="campBtn">⛺ 우리 가족 일정</button>
     </div>
   </header>
 
@@ -199,7 +205,7 @@ mark{background:color-mix(in srgb,#F2C94C 55%,transparent);color:inherit;border-
   <polygon points="90,126 150,138.6 170,189 160,233.1 120,220.5 85,163.8" class="land"></polygon><polygon points="20,37.8 90,25.2 130,44.1 120,88.2 60,94.5 20,75.6" class="land"></polygon>
   <text x="220" y="5" class="rlabel" text-anchor="middle">북한</text><text x="260" y="163.8" class="rlabel" text-anchor="middle">강화도</text><text x="130" y="173.9" class="rlabel" text-anchor="middle">석모도</text>
   <text x="70" y="73.1" class="rlabel" text-anchor="middle">교동도</text><text x="500" y="214.2" class="rlabel" text-anchor="middle">김포</text><text x="440" y="46.6" class="wlabel" text-anchor="middle">한강 하구</text><text x="100" y="277.2" class="wlabel" text-anchor="middle">서해</text><circle class="dot t" data-i="0" cx="413" cy="94.5" r="7" tabindex="0" role="button" aria-label="애기봉평화생태공원"><title>애기봉평화생태공원</title></circle><circle class="dot t" data-i="1" cx="366" cy="153.7" r="7" tabindex="0" role="button" aria-label="문수산성"><title>문수산성</title></circle><circle class="dot t" data-i="2" cx="351" cy="224.3" r="7" tabindex="0" role="button" aria-label="덕포진"><title>덕포진</title></circle><circle class="dot t" data-i="3" cx="526" cy="263.3" r="7" tabindex="0" role="button" aria-label="김포 장릉"><title>김포 장릉</title></circle><circle class="dot t" data-i="4" cx="448" cy="233.1" r="7" tabindex="0" role="button" aria-label="라베니체 (구래동 수변거리)"><title>라베니체 (구래동 수변거리)</title></circle><circle class="dot t" data-i="5" cx="337" cy="257" r="7" tabindex="0" role="button" aria-label="초지진"><title>초지진</title></circle><circle class="dot t" data-i="6" cx="335" cy="200.3" r="7" tabindex="0" role="button" aria-label="광성보"><title>광성보</title></circle><circle class="dot t" data-i="7" cx="311" cy="255.8" r="7" tabindex="0" role="button" aria-label="전등사"><title>전등사</title></circle><circle class="dot t" data-i="8" cx="253" cy="272.2" r="7" tabindex="0" role="button" aria-label="마니산 참성단"><title>마니산 참성단</title></circle><circle class="dot t" data-i="9" cx="275" cy="298.6" r="7" tabindex="0" role="button" aria-label="동막해변"><title>동막해변</title></circle><circle class="dot t" data-i="10" cx="290" cy="283.5" r="7" tabindex="0" role="button" aria-label="강화 루지"><title>강화 루지</title></circle><circle class="dot t" data-i="11" cx="271" cy="73.1" r="7" tabindex="0" role="button" aria-label="강화 고인돌 (부근리 지석묘)"><title>강화 고인돌 (부근리 지석묘)</title></circle><circle class="dot t" data-i="12" cx="221" cy="52.9" r="7" tabindex="0" role="button" aria-label="강화평화전망대"><title>강화평화전망대</title></circle><circle class="dot t" data-i="13" cx="115" cy="152.5" r="7" tabindex="0" role="button" aria-label="석모도 보문사"><title>석모도 보문사</title></circle><circle class="dot t" data-i="14" cx="148" cy="205.4" r="7" tabindex="0" role="button" aria-label="석모도 미네랄온천"><title>석모도 미네랄온천</title></circle><circle class="dot t" data-i="15" cx="99" cy="61.7" r="7" tabindex="0" role="button" aria-label="교동 대룡시장"><title>교동 대룡시장</title></circle><circle class="dot f" data-i="16" cx="368" cy="238.1" r="7" tabindex="0" role="button" aria-label="대명항 수산물직판장"><title>대명항 수산물직판장</title></circle><circle class="dot f" data-i="17" cx="311" cy="110.9" r="7" tabindex="0" role="button" aria-label="강화풍물시장 (만복정)"><title>강화풍물시장 (만복정)</title></circle><circle class="dot f" data-i="18" cx="306" cy="105.8" r="7" tabindex="0" role="button" aria-label="일억조식당"><title>일억조식당</title></circle><circle class="dot f" data-i="19" cx="339" cy="163.8" r="7" tabindex="0" role="button" aria-label="더리미 장어마을"><title>더리미 장어마을</title></circle><circle class="dot f" data-i="20" cx="216" cy="298.6" r="7" tabindex="0" role="button" aria-label="선수포구 밴댕이마을"><title>선수포구 밴댕이마을</title></circle><circle class="dot c" data-i="21" cx="423" cy="88.2" r="7" tabindex="0" role="button" aria-label="스타벅스 애기봉생태공원점"><title>스타벅스 애기봉생태공원점</title></circle><circle class="dot c" data-i="22" cx="302" cy="103.3" r="7" tabindex="0" role="button" aria-label="조양방직"><title>조양방직</title></circle><circle class="dot c" data-i="23" cx="285" cy="301.1" r="7" tabindex="0" role="button" aria-label="토크라피"><title>토크라피</title></circle><circle class="dot c" data-i="24" cx="340" cy="233.1" r="7" tabindex="0" role="button" aria-label="아이나카페"><title>아이나카페</title></circle><circle class="dot f h" data-i="25" cx="313" cy="219.2" r="7" tabindex="0" role="button" aria-label="금문도"><title>금문도</title></circle><circle class="dot f h" data-i="26" cx="337" cy="279.7" r="7" tabindex="0" role="button" aria-label="꼬막한상"><title>꼬막한상</title></circle><circle class="dot f h" data-i="27" cx="305" cy="107.1" r="7" tabindex="0" role="button" aria-label="수라전통육개장 본점"><title>수라전통육개장 본점</title></circle><circle class="dot f h" data-i="28" cx="204" cy="158.8" r="7" tabindex="0" role="button" aria-label="강화도 꽃게향"><title>강화도 꽃게향</title></circle><circle class="dot f h" data-i="29" cx="194" cy="245.7" r="7" tabindex="0" role="button" aria-label="쌈밥이네"><title>쌈밥이네</title></circle><circle class="dot f h" data-i="30" cx="404" cy="166.3" r="7" tabindex="0" role="button" aria-label="참두부나라"><title>참두부나라</title></circle><circle class="dot c h" data-i="31" cx="311" cy="236.9" r="7" tabindex="0" role="button" aria-label="우트우트"><title>우트우트</title></circle><circle class="dot c h" data-i="32" cx="329" cy="133.6" r="7" tabindex="0" role="button" aria-label="프란쓰"><title>프란쓰</title></circle><circle class="dot c h" data-i="33" cx="301" cy="239.4" r="7" tabindex="0" role="button" aria-label="한옥카페 드리우니"><title>한옥카페 드리우니</title></circle><circle class="dot c h" data-i="34" cx="230" cy="281" r="7" tabindex="0" role="button" aria-label="멍때림 카페"><title>멍때림 카페</title></circle><circle class="dot c h" data-i="35" cx="460" cy="250.7" r="7" tabindex="0" role="button" aria-label="상두그레이"><title>상두그레이</title></circle><circle class="dot c h" data-i="36" cx="477.5" cy="211" r="7" tabindex="0" role="button" aria-label="55갤런"><title>55갤런</title></circle><circle class="dot t" data-i="37" cx="307.5" cy="196.6" r="7" tabindex="0" role="button" aria-label="옥토끼우주센터"><title>옥토끼우주센터</title></circle><circle class="dot t" data-i="38" cx="254.8" cy="69.8" r="7" tabindex="0" role="button" aria-label="강화자연사박물관"><title>강화자연사박물관</title></circle><circle class="dot t" data-i="39" cx="358.8" cy="225.9" r="7" tabindex="0" role="button" aria-label="덕포진 교육박물관"><title>덕포진 교육박물관</title></circle><circle class="dot t" data-i="40" cx="450.5" cy="131.8" r="7" tabindex="0" role="button" aria-label="태산패밀리파크"><title>태산패밀리파크</title></circle><circle class="dot t" data-i="41" cx="202.7" cy="278.1" r="7" tabindex="0" role="button" aria-label="강화갯벌센터"><title>강화갯벌센터</title></circle><circle class="dot t" data-i="42" cx="336.7" cy="121.6" r="7" tabindex="0" role="button" aria-label="갑곶돈대·강화전쟁박물관"><title>갑곶돈대·강화전쟁박물관</title></circle><text id="dlabel" class="dlabel"></text></svg></div>
-      <div class="mapnote"><span>점을 누르면 오른쪽 목록에서 찾아 줍니다<br><span class="storeNote" id="storeNote"></span><br><span class="storeNote" id="nvStatus">버전 13</span></span><span class="key"><i style="background:var(--tour)"></i>관광<i style="background:var(--food)"></i>맛집<i style="background:var(--cafe)"></i>카페<i style="background:transparent;border:2px solid #E0A100"></i>평가 좋은 곳<i style="background:transparent;border:3px solid var(--ink)"></i>내가 가본 곳</span></div>
+      <div class="mapnote"><span>점을 누르면 오른쪽 목록에서 찾아 줍니다<br><span class="storeNote" id="storeNote"></span><br><span class="storeNote" id="nvStatus">버전 14</span></span><span class="key"><i style="background:var(--tour)"></i>관광<i style="background:var(--food)"></i>맛집<i style="background:var(--cafe)"></i>카페<i style="background:transparent;border:2px solid #E0A100"></i>평가 좋은 곳<i style="background:transparent;border:3px solid var(--ink)"></i>내가 가본 곳</span></div>
     </section>
 
     <section class="listPane" id="listPane" aria-label="장소 목록">
@@ -853,39 +859,54 @@ mark{background:color-mix(in srgb,#F2C94C 55%,transparent);color:inherit;border-
       <div class="courses" id="courses">
         <h2>추천 코스</h2>
         <div class="course camp" id="campCourse">
-          <h3>⛺ 김포캠핑파크 2박 3일</h3>
-          <p class="cnote">캠핑장(월곶면)이 강화대교 바로 앞이라 강화까지 차로 5~10분이면 갑니다. 첫날은 애기봉과 캠핑장, 둘째 날은 강화, 마지막 날은 김포 남쪽을 돌아 귀가해요. 밑줄 친 장소 이름을 누르면 지도와 목록에서 찾아 줍니다.</p>
+          <h3>⛺ 우리 가족 일정 · 김포캠핑파크 2박 3일</h3>
+          <p class="cnote">숙소는 <button type="button" class="go" data-n="김포캠핑파크">김포캠핑파크</button>(월곶면)예요. 강화대교 바로 앞이라 강화까지 금방입니다. 밑줄 친 장소 이름을 누르면 지도와 목록에서 찾아 줍니다.</p>
+          <p class="warn"><strong>추석 연휴 주의</strong>&nbsp; 25일(금)이 추석 당일이에요. 쉬는 식당과 시설이 많으니 가기 전에 영업하는지 꼭 전화로 확인하세요.</p>
           <div class="day">
-            <h4>1일차 · 애기봉 보고 캠핑장으로</h4>
-            <ol>
-              <li><button type="button" class="go" data-n="애기봉평화생태공원">애기봉평화생태공원</button> (온라인 예약, 신분증 필수)</li>
-              <li><button type="button" class="go" data-n="스타벅스 애기봉생태공원점">스타벅스 애기봉생태공원점</button>에서 북한 보며 커피</li>
-              <li>점심: <button type="button" class="go" data-n="참두부나라">참두부나라</button> 손두부</li>
-              <li><button type="button" class="go" data-n="김포캠핑파크">김포캠핑파크</button> 체크인, 텐트 치고 실내 놀이터·수영장(여름)에서 놀기</li>
-              <li>저녁은 캠핑장 바비큐</li>
+            <h4>1일차 · 9/24(목) 강화 중부~남부</h4>
+            <ol class="tl">
+              <li><b class="tm">12:00</b><span><button type="button" class="go" data-n="김포캠핑파크">김포캠핑파크</button> 체크인, 텐트 설치</span></li>
+              <li><b class="tm">13:30</b><span><button type="button" class="go" data-n="애기봉평화생태공원">애기봉평화생태공원</button> (온라인 예약, 신분증 필수)</span></li>
+              <li><b class="tm">16:00</b><span><button type="button" class="go" data-n="아트팩토리 참기름 강화">아트팩토리 참기름 강화</button></span></li>
+              <li><b class="tm">18:00</b><span>저녁: <button type="button" class="go" data-n="보스턴 수제버거">보스턴 수제버거</button> 또는 <button type="button" class="go" data-n="쌈밥이네">쌈밥이네</button></span></li>
+              <li><b class="tm">20:00</b><span>이마트에서 장보고 캠핑장으로 (명절이라 마트 영업시간을 미리 확인)</span></li>
             </ol>
           </div>
           <div class="day">
-            <h4>2일차 · 강화대교 건너 강화 북쪽</h4>
-            <ol>
-              <li><button type="button" class="go" data-n="갑곶돈대·강화전쟁박물관">갑곶돈대·강화전쟁박물관</button> (캠핑장에서 차로 10분)</li>
-              <li><button type="button" class="go" data-n="강화 고인돌 (부근리 지석묘)">강화 고인돌</button>과 바로 옆 <button type="button" class="go" data-n="강화자연사박물관">강화자연사박물관</button></li>
-              <li>점심: <button type="button" class="go" data-n="강화풍물시장 (만복정)">강화풍물시장 만복정</button> 밴댕이, 또는 <button type="button" class="go" data-n="수라전통육개장 본점">수라전통육개장</button></li>
-              <li><button type="button" class="go" data-n="조양방직">조양방직</button>에서 커피와 사진</li>
-              <li>일찍 돌아와 캠핑장에서 쉬고, 저녁은 <button type="button" class="go" data-n="더리미 장어마을">더리미 장어마을</button> 또는 캠핑장에서 불멍</li>
+            <h4>2일차 · 9/25(금, 추석) 강화 중부~북부</h4>
+            <ol class="tl">
+              <li><b class="tm">10:00</b><span><button type="button" class="go" data-n="강화레포츠파크">강화레포츠파크</button> (예약 필수)</span></li>
+              <li><b class="tm">13:00</b><span>점심: <button type="button" class="go" data-n="봉천가정식백반">봉천가정식백반</button></span></li>
+              <li><b class="tm">14:00</b><span><button type="button" class="go" data-n="강화 고인돌 (부근리 지석묘)">강화 고인돌 유적</button></span></li>
+              <li><b class="tm">16:00</b><span>캠핑장으로 돌아와 저녁 준비</span></li>
+              <li><b class="tm">17:00</b><span>손님맞이</span></li>
             </ol>
           </div>
           <div class="day">
-            <h4>3일차 · 체크아웃하고 김포 남쪽으로 귀가</h4>
+            <h4>3일차 · 9/26(토) 체크아웃하고 귀가 (추천)</h4>
             <ol>
               <li>아침 먹고 천천히 정리, 체크아웃</li>
               <li><button type="button" class="go" data-n="덕포진">덕포진</button> 산책과 <button type="button" class="go" data-n="덕포진 교육박물관">덕포진 교육박물관</button> 옛날 교실 체험</li>
               <li>점심: <button type="button" class="go" data-n="대명항 수산물직판장">대명항 수산물직판장</button>에서 회·꽃게</li>
-              <li><button type="button" class="go" data-n="55갤런">55갤런</button> 또는 <button type="button" class="go" data-n="상두그레이">상두그레이</button>에서 커피 한 잔 하고 귀가</li>
             </ol>
           </div>
-          <p class="cnote"><strong>강화 남쪽이 더 끌리면</strong>&nbsp; 2일차를 <button type="button" class="go" data-n="광성보">광성보</button> → <button type="button" class="go" data-n="전등사">전등사</button> → <button type="button" class="go" data-n="동막해변">동막해변</button> 일몰로 바꿔도 좋아요. 캠핑장에서 40분쯤 걸립니다.</p>
-          <p class="cnote"><strong>비 오는 날</strong>&nbsp; <button type="button" class="go" data-n="옥토끼우주센터">옥토끼우주센터</button>나 캠핑장 실내 놀이터에서 보내면 됩니다.</p>
+          <div class="day">
+            <h4>☕ 풍경 좋은 카페 (골라 가기)</h4>
+            <ul>
+              <li><button type="button" class="go" data-n="카페 도레도레 강화">카페 도레도레 강화</button>: 남쪽 해안. 1일차에 아트팩토리 참기름과 묶기 좋아요</li>
+              <li><button type="button" class="go" data-n="돈대카페 아웃포스트">돈대카페 아웃포스트</button>: 서쪽 외포리 바다 전망. 쌈밥이네와 가까워요</li>
+              <li><button type="button" class="go" data-n="카페 라파밀리아">카페 라파밀리아</button>: 서쪽 양도면 바닷가, 넓은 정원. 아웃포스트와도 가까워요</li>
+            </ul>
+          </div>
+          <div class="day">
+            <h4>➕ 시간 나면 추가하기 (옵션)</h4>
+            <ul>
+              <li><button type="button" class="go" data-n="옥토끼우주센터">옥토끼우주센터</button>: 우주 전시와 야외 놀이. 비 오는 날 대안으로 좋아요</li>
+              <li><button type="button" class="go" data-n="강화천문과학관">강화천문과학관</button>: 밤에 망원경으로 별 보기. 25일(추석 당일)은 휴관이라 24일 밤에 가야 해요</li>
+              <li><button type="button" class="go" data-n="마니산 참성단">마니산</button>: 등산. 오르내리는 데 반나절 걸려요</li>
+              <li><button type="button" class="go" data-n="전등사">전등사</button>: 숲길 산책. 1일차 아트팩토리 참기름·보스턴 수제버거와 가까워요</li>
+            </ul>
+          </div>
         </div>
         <div class="course">
           <h3>당일치기 (서울 출발)</h3>
@@ -1103,7 +1124,39 @@ const P = [
  {k:1,n:"김포캠핑파크",r:"g",c:"관광",s:"캠핑·숙소",lat:37.7472,lng:126.5585,q:"김포캠핑파크",
   d:"월곶면 문수산 자락에 있는 가족형 캠핑장입니다. 대형 실내 어린이 놀이터와 여름 야외 수영장이 있습니다.",
   p:["강화대교까지 차로 5분 남짓이라 강화 여행 베이스로 딱","애기봉·문수산성이 가까움","실내 놀이터·낚시 체험 등 캠핑장 안에서도 놀거리가 많음"],
-  t:"주소는 월곶면 용강로 325입니다. 수영장 운영 기간과 체험 시설 이용 방법은 예약할 때 꼭 확인하세요."}
+  t:"주소는 월곶면 용강로 325입니다. 수영장 운영 기간과 체험 시설 이용 방법은 예약할 때 꼭 확인하세요."},
+ {n:"아트팩토리 참기름 강화",r:"k",c:"관광",s:"빛 전시·카페",lat:37.638,lng:126.500,q:"아트팩토리 참기름",
+  d:"옛 참기름 공장을 고쳐 만든 복합문화공간으로, 몰입형 빛 전시와 카페가 함께 있습니다.",
+  p:["공장 건물을 살린 독특한 분위기","전시 보고 카페까지 한 번에","실내라 날씨 걱정이 적음"],
+  t:"월요일 휴무. 평일 18시, 주말·공휴일 19시까지 운영합니다. 주소는 길상면 까치골길 109입니다."},
+ {n:"보스턴 수제버거",r:"k",c:"맛집",s:"수제버거",lat:37.628,lng:126.487,q:"보스턴수제버거 강화 본점",
+  d:"강화 온수리에 본점이 있는 수제버거집입니다. 동막해변 쪽 화도면에도 지점이 있습니다.",
+  p:["아이들도 좋아하는 메뉴","전등사·아트팩토리 참기름과 가까움","가볍게 한 끼 하기 좋음"],
+  t:"본점 주소는 길상면 길상로 320이고, 저녁 8시 무렵 문을 닫습니다. 명절에는 영업시간이 달라질 수 있어요."},
+ {k:1,n:"강화레포츠파크",r:"k",c:"관광",s:"집라인·체험",lat:37.700,lng:126.458,q:"강화레포츠파크",
+  d:"혈구산 자락 휴양림 안에 있는 레저 테마파크로, 집라인과 어드벤처 코스를 즐길 수 있습니다.",
+  p:["집라인 5코스(총 1km)와 어드벤처 18코스","클라이밍·레이저 서바이벌·고카트도 있음","숲속이라 공기가 좋음"],
+  t:"예약 필수(032-937-7481). 화요일 휴무, 주말·공휴일은 9~18시 운영합니다. 주소는 불은면 중앙로 546-34입니다."},
+ {n:"봉천가정식백반",r:"k",c:"맛집",s:"백반·생선구이",lat:37.763,lng:126.418,q:"봉천가정식백반",
+  d:"하점면에 있는 가정식 백반집으로, 허영만의 백반기행에 소개됐습니다.",
+  p:["집밥 같은 반찬 한 상","강화 고인돌과 가까워 함께 묶기 좋음","생선구이가 맛있다는 평"],
+  t:"작은 동네 식당이라 쉬는 날이 있을 수 있어요. 가기 전에 전화로 확인하세요."},
+ {n:"카페 도레도레 강화",r:"k",c:"카페",s:"정원·케이크",lat:37.600,lng:126.470,q:"도레도레 강화점",
+  d:"무지개 케이크와 수국 정원으로 유명한 베이커리 카페입니다. 화도면 남쪽 해안에 있습니다.",
+  p:["예쁜 정원에서 사진 찍기 좋음","화려한 케이크","동막해변·마니산과 가까움"],
+  t:"주소는 화도면 해안남로1844번길 19입니다. 평일 18시, 주말 19시 무렵까지 운영합니다."},
+ {n:"돈대카페 아웃포스트",r:"k",c:"카페",s:"오션뷰·건축",lat:37.698,lng:126.374,q:"돈대카페 아웃포스트",
+  d:"강화의 옛 요새 '돈대'를 본뜬 둥근 건물의 카페로, 서해 바다가 내려다보입니다.",
+  p:["iF 디자인 어워드를 받은 건축","외포리 바다 전망","무료 주차"],
+  t:"주소는 내가면 강화서로 91-2이고, 10시 30분~18시에 운영합니다."},
+ {n:"카페 라파밀리아",r:"k",c:"카페",s:"오션뷰·정원",lat:37.664,lng:126.377,q:"카페 라파밀리아 강화",
+  d:"양도면 바닷가의 큰 카페입니다. 1층은 갤러리, 2·3층은 바다가 보이는 카페입니다.",
+  p:["건물 뒤로 약 5,500평의 넓은 정원","바다와 노을 풍경","갤러리 구경도 함께"],
+  t:"주소는 양도면 해안서로 590-11입니다. 돈대카페 아웃포스트와 차로 가까워요."},
+ {k:1,n:"강화천문과학관",r:"k",c:"관광",s:"별 관측",lat:37.745,lng:126.418,q:"강화천문과학관",
+  d:"문을 닫은 옛 초등학교를 고쳐 만든 천문과학관으로, 망원경으로 별과 행성을 직접 볼 수 있습니다.",
+  p:["망원경 7대로 밤하늘 관측","천체투영관 상영","저녁 늦게까지 운영"],
+  t:"일반관람은 네이버 예약(회차제)입니다. 월요일과 설·추석 당일은 휴관합니다. 주소는 하점면 강화서로 915-1입니다."}
 ];
 
 const REG = {all:"전체",g:"김포",k:"강화"};
@@ -1419,7 +1472,7 @@ window.initNaverMap=function(){
   }
 };
 function nmFallback(){ if(nmap){nmap=null;nmarks=[]} drawMap(); render(); }
-function nmStatus(t){const n=document.getElementById("nvStatus");if(n)n.textContent="버전 13 · "+t}
+function nmStatus(t){const n=document.getElementById("nvStatus");if(n)n.textContent="버전 14 · "+t}
 let nmParam=(new URLSearchParams(location.search).get("keytype")==="client")?"ncpClientId":"ncpKeyId", nmRetried=false;
 window.navermap_authFailure=function(){
   nmFallback();
